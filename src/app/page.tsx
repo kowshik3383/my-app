@@ -2,7 +2,7 @@
 
 import { useStore } from "@/store/useStore";
 import Onboarding from "@/components/Onboarding";
-import Chat from "@/components/Chat";
+import AvatarChat from "@/components/AvatarChat";
 import Header from "@/components/Header";
 import { Toaster } from "react-hot-toast";
 
@@ -22,7 +22,7 @@ export default function Home() {
     <div className="h-screen flex flex-col">
       <Header />
       <main className="flex-1 overflow-hidden">
-        <Chat />
+        <AvatarChat />
       </main>
       <Toaster position="top-center" />
     </div>

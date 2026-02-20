@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb, ObjectId } from "@/lib/mongodb";
 import { generateAIResponse } from "@/lib/gemini";
 import { generateVoice, VOICE_IDS } from "@/lib/elevenlabs";
+import { generateLipsync, selectAnimation, selectFacialExpression, estimateAudioDuration } from "@/lib/lipsync";
 import type { AIModulation } from "@/store/useStore";
 
 export async function POST(request: NextRequest) {
@@ -61,9 +62,32 @@ export async function POST(request: NextRequest) {
       conversationHistory,
     });
 
-    // Generate voice for AI response
-    const voiceId = VOICE_IDS[user.aiModulation as AIModulation] || VOICE_IDS.professional;
-    const audioUrl = await generateVoice(aiResponse, voiceId);
+    // Generate lipsync data, animation, and facial expression immediately
+    const duration = estimateAudioDuration(aiResponse);
+    const lipsync = generateLipsync(aiResponse, duration);
+    const animation = selectAnimation(aiResponse);
+    const facialExpression = selectFacialExpression(aiResponse);
+    
+    // Make voice generation optional and non-blocking
+    // Generate voice in background (or skip if API key not configured)
+    let audioBase64 = '';
+    const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+    
+    // Only generate voice if API key is configured, otherwise client will use browser speech
+    if (ELEVENLABS_API_KEY) {
+      try {
+        const voiceId = VOICE_IDS[user.aiModulation as AIModulation] || VOICE_IDS.professional;
+        const audioDataUrl = await Promise.race([
+          generateVoice(aiResponse, voiceId),
+          new Promise<string>((resolve) => setTimeout(() => resolve(''), 5000)) // 5s timeout
+        ]);
+        
+        audioBase64 = audioDataUrl ? audioDataUrl.split(',')[1] : '';
+      } catch (error) {
+        console.error("Voice generation failed, will use browser speech:", error);
+        audioBase64 = '';
+      }
+    }
 
     // Save AI message
     const aiMessageResult = await messagesCollection.insertOne({
@@ -71,7 +95,10 @@ export async function POST(request: NextRequest) {
       userId: new ObjectId(userId),
       role: "assistant",
       content: aiResponse,
-      audioUrl: audioUrl || null,
+      audioBase64,
+      lipsync,
+      animation,
+      facialExpression,
       createdAt: new Date(),
     });
 
@@ -90,7 +117,10 @@ export async function POST(request: NextRequest) {
         id: aiMessage?._id.toString(),
         role: aiMessage?.role,
         content: aiMessage?.content,
-        audioUrl: aiMessage?.audioUrl,
+        audioBase64: aiMessage?.audioBase64,
+        lipsync: aiMessage?.lipsync,
+        animation: aiMessage?.animation,
+        facialExpression: aiMessage?.facialExpression,
         createdAt: aiMessage?.createdAt,
       },
     });

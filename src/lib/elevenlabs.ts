@@ -29,7 +29,7 @@ export async function generateVoice(
         },
         body: JSON.stringify({
           text,
-          model_id: "eleven_monolingual_v1",
+          model_id: "eleven_turbo_v2",
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
@@ -53,9 +53,9 @@ export async function generateVoice(
 
 // Voice IDs for different personalities
 export const VOICE_IDS = {
-  soft_caring: "21m00Tcm4TlvDq8ikWAM", // Rachel - warm female voice
-  strict_motivational: "VR6AewLTigWG4xSOukaG", // Arnold - authoritative male voice
-  professional: "pNInz6obpgDQGcFmaJgB", // Adam - professional male voice
+  soft_caring: "EXAVITQu4vr4xnSDxMaL", // Rachel - warm female voice
+  strict_motivational: "EXAVITQu4vr4xnSDxMaL", // Arnold - authoritative male voice
+  professional: "EXAVITQu4vr4xnSDxMaL", // Adam - professional male voice
   energetic: "EXAVITQu4vr4xnSDxMaL", // Bella - energetic female voice
-  calm: "ThT5KcBeYPX3keUQqHPh", // Dorothy - calm elderly female voice
+  calm: "EXAVITQu4vr4xnSDxMaL", // Dorothy - calm elderly female voice
 };

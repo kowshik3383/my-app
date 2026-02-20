@@ -63,10 +63,39 @@
 
   button {
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   input, textarea, select {
     font-family: inherit;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Remove default button styles */
+  button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Prevent text selection on interactive elements */
+  button, .touch-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Improve text rendering */
+  p, span, div {
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Keyboard navigation styles */
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
   }
 }
 
@@ -96,4 +125,45 @@
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@utility animate-in {
+  animation: animate-in 0.3s ease-out;
+}
+
+@keyframes animate-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@utility slide-in-from-bottom-2 {
+  animation: slide-in-from-bottom 0.3s ease-out;
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(0.5rem);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
