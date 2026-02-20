@@ -10,10 +10,14 @@ interface ChatInputProps {
   disabled?: boolean;
 }
 
-export default function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
+export default function ChatInput({
+  onSendMessage,
+  disabled = false,
+}: ChatInputProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { isRecording, transcript, startRecording, stopRecording, error } = useVoiceRecording();
+  const { isRecording, transcript, startRecording, stopRecording, error } =
+    useVoiceRecording();
   const { isLoading } = useStore();
 
   const handleSend = () => {
@@ -45,7 +49,9 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
     if (isRecording) {
       stopRecording();
       if (transcript.trim()) {
-        setTimeout(() => { onSendMessage(transcript.trim()); }, 100);
+        setTimeout(() => {
+          onSendMessage(transcript.trim());
+        }, 100);
       }
     } else {
       startRecording();
@@ -53,7 +59,8 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   };
 
   const currentText = isRecording ? transcript : message;
-  const canSend = !!(message.trim() || transcript.trim()) && !disabled && !isLoading;
+  const canSend =
+    !!(message.trim() || transcript.trim()) && !disabled && !isLoading;
 
   return (
     <>
@@ -102,7 +109,6 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
           font-weight: 300;
-          color: #1a1a1a;
           resize: none;
           line-height: 1.6;
           padding: 6px 0;
@@ -224,16 +230,18 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
       <div className="ci-root">
         {error && <div className="ci-error">{error}</div>}
 
-        <div className="ci-row">
+        <div className="ci-row text-black">
           <textarea
             ref={textareaRef}
             value={currentText}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={disabled || isLoading || isRecording}
-            placeholder={isRecording ? "Listening…" : "Message… (Enter to send)"}
+            placeholder={
+              isRecording ? "Listening…" : "Message… (Enter to send)"
+            }
             rows={1}
-            className="ci-textarea"
+            className="ci-textarea text-black"
           />
 
           <div className="ci-actions">
@@ -243,7 +251,11 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
               className={`ci-mic-btn ${isRecording ? "recording" : ""}`}
               aria-label={isRecording ? "Stop recording" : "Start voice input"}
             >
-              {isRecording ? <MicOff size={16} strokeWidth={1.8} /> : <Mic size={16} strokeWidth={1.8} />}
+              {isRecording ? (
+                <MicOff size={16} strokeWidth={1.8} />
+              ) : (
+                <Mic size={16} strokeWidth={1.8} />
+              )}
             </button>
 
             <button
@@ -252,10 +264,11 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
               className="ci-send-btn"
               aria-label="Send message"
             >
-              {isLoading
-                ? <Loader2 size={15} strokeWidth={2} className="animate-spin" />
-                : <Send size={15} strokeWidth={2} />
-              }
+              {isLoading ? (
+                <Loader2 size={15} strokeWidth={2} className="animate-spin" />
+              ) : (
+                <Send size={65} strokeWidth={2} />
+              )}
             </button>
           </div>
         </div>
