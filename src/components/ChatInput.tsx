@@ -36,8 +36,6 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-    
-    // Auto-resize textarea
     const textarea = e.target;
     textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
@@ -46,11 +44,8 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   const handleVoiceToggle = () => {
     if (isRecording) {
       stopRecording();
-      // Auto-send after recording stops
       if (transcript.trim()) {
-        setTimeout(() => {
-          onSendMessage(transcript.trim());
-        }, 100);
+        setTimeout(() => { onSendMessage(transcript.trim()); }, 100);
       }
     } else {
       startRecording();
@@ -58,69 +53,220 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   };
 
   const currentText = isRecording ? transcript : message;
+  const canSend = !!(message.trim() || transcript.trim()) && !disabled && !isLoading;
 
   return (
-    <div className="border-t border-gray-200 bg-white p-4">
-      {error && (
-        <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-          {error}
-        </div>
-      )}
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
 
-      <div className="flex items-end gap-2">
-        {/* Voice input button */}
-        <button
-          onClick={handleVoiceToggle}
-          disabled={disabled || isLoading}
-          className={`flex-shrink-0 p-3 rounded-full transition-all ${
-            isRecording
-              ? "bg-red-500 text-white animate-pulse"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-          aria-label={isRecording ? "Stop recording" : "Start voice input"}
-        >
-          {isRecording ? (
-            <MicOff className="w-5 h-5" />
-          ) : (
-            <Mic className="w-5 h-5" />
-          )}
-        </button>
+        .ci-root {
+          font-family: 'DM Sans', sans-serif;
+          background: #ffffff;
+          border-top: 1px solid #eeebe7;
+          padding: 14px 16px 16px;
+        }
 
-        {/* Text input */}
-        <div className="flex-1 relative">
+        .ci-error {
+          margin-bottom: 10px;
+          padding: 9px 14px;
+          background: #fff5f5;
+          border: 1px solid #ffd5d5;
+          border-radius: 10px;
+          font-size: 13px;
+          color: #c0392b;
+          font-weight: 400;
+        }
+
+        .ci-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 8px;
+          background: #f5f3f0;
+          border: 1.5px solid #eeebe7;
+          border-radius: 18px;
+          padding: 6px 6px 6px 16px;
+          transition: border-color 0.2s ease;
+        }
+
+        .ci-row:focus-within {
+          border-color: #1a1a1a;
+          background: #fff;
+        }
+
+        .ci-textarea {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 300;
+          color: #1a1a1a;
+          resize: none;
+          line-height: 1.6;
+          padding: 6px 0;
+          min-height: 32px;
+          max-height: 120px;
+          overflow-y: auto;
+          scrollbar-width: none;
+        }
+
+        .ci-textarea::-webkit-scrollbar { display: none; }
+
+        .ci-textarea::placeholder {
+          color: #c0bbb5;
+          font-weight: 300;
+        }
+
+        .ci-textarea:disabled {
+          cursor: not-allowed;
+          color: #b0aca6;
+        }
+
+        .ci-actions {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex-shrink: 0;
+          padding-bottom: 4px;
+        }
+
+        .ci-mic-btn {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #a09c96;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+
+        .ci-mic-btn:hover:not(:disabled) {
+          background: #eeebe7;
+          color: #1a1a1a;
+        }
+
+        .ci-mic-btn.recording {
+          color: #e05252;
+          background: #fff0f0;
+          animation: micPulse 1.4s ease-in-out infinite;
+        }
+
+        .ci-mic-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        @keyframes micPulse {
+          0%, 100% { background: #fff0f0; }
+          50% { background: #ffe0e0; }
+        }
+
+        .ci-send-btn {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          border: none;
+          background: #1a1a1a;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+
+        .ci-send-btn:hover:not(:disabled) {
+          background: #333;
+          transform: scale(1.04);
+        }
+
+        .ci-send-btn:active:not(:disabled) { transform: scale(0.96); }
+
+        .ci-send-btn:disabled {
+          background: #eeebe7;
+          color: #c0bbb5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .ci-recording-hint {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          margin-top: 10px;
+          padding-left: 4px;
+          font-size: 12px;
+          color: #c0392b;
+          font-weight: 400;
+          letter-spacing: 0.01em;
+        }
+
+        .ci-rec-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #e05252;
+          animation: dotPulse 1.2s ease-in-out infinite;
+          flex-shrink: 0;
+        }
+
+        @keyframes dotPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.8); }
+        }
+      `}</style>
+
+      <div className="ci-root">
+        {error && <div className="ci-error">{error}</div>}
+
+        <div className="ci-row">
           <textarea
             ref={textareaRef}
             value={currentText}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={disabled || isLoading || isRecording}
-            placeholder={isRecording ? "Listening..." : "Type your message... (Shift+Enter for new line)"}
+            placeholder={isRecording ? "Listening…" : "Message… (Enter to send)"}
             rows={1}
-            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none scrollbar-thin disabled:bg-gray-50 disabled:cursor-not-allowed"
+            className="ci-textarea"
           />
+
+          <div className="ci-actions">
+            <button
+              onClick={handleVoiceToggle}
+              disabled={disabled || isLoading}
+              className={`ci-mic-btn ${isRecording ? "recording" : ""}`}
+              aria-label={isRecording ? "Stop recording" : "Start voice input"}
+            >
+              {isRecording ? <MicOff size={16} strokeWidth={1.8} /> : <Mic size={16} strokeWidth={1.8} />}
+            </button>
+
+            <button
+              onClick={handleSend}
+              disabled={!canSend}
+              className="ci-send-btn"
+              aria-label="Send message"
+            >
+              {isLoading
+                ? <Loader2 size={15} strokeWidth={2} className="animate-spin" />
+                : <Send size={15} strokeWidth={2} />
+              }
+            </button>
+          </div>
         </div>
 
-        {/* Send button */}
-        <button
-          onClick={handleSend}
-          disabled={(!message.trim() && !transcript.trim()) || disabled || isLoading}
-          className="flex-shrink-0 p-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full hover:from-green-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
-          aria-label="Send message"
-        >
-          {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Send className="w-5 h-5" />
-          )}
-        </button>
+        {isRecording && (
+          <div className="ci-recording-hint">
+            <span className="ci-rec-dot" />
+            Recording — click mic to stop and send
+          </div>
+        )}
       </div>
-
-      {isRecording && (
-        <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
-          <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          Recording... Click mic again to stop and send
-        </div>
-      )}
-    </div>
+    </>
   );
 }

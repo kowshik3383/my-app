@@ -60,7 +60,7 @@ export default function AvatarChat() {
     <div className="h-full flex flex-col relative bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* 3D Canvas - Main Avatar Display */}
       <div className="flex-1 relative min-h-0">
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 ">
           <Canvas 
             shadows 
             camera={{ position: [0, 0, 1], fov: 30 }}
