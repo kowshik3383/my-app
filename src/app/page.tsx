@@ -1,30 +1,21 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
-import Onboarding from "@/components/Onboarding";
-import Chat from "@/components/Chat";
-import Header from "@/components/Header";
-import { Toaster } from "react-hot-toast";
+import { Loader } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { Leva } from "leva";
+import { Experience } from "../components/Experience";
+import { UI } from "../components/UI";
+import { ChatProvider } from "../hooks/useChat";
 
 export default function Home() {
-  const { isOnboarded } = useStore();
-
-  if (!isOnboarded) {
-    return (
-      <>
-        <Onboarding />
-        <Toaster position="top-center" />
-      </>
-    );
-  }
-
   return (
-    <div className="h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 overflow-hidden">
-        <Chat />
-      </main>
-      <Toaster position="top-center" />
-    </div>
+    <ChatProvider>
+      <Loader />
+      <Leva hidden />
+      <UI />
+      <Canvas shadows camera={{ position: [0, 0, 1], fov: 30 }}>
+        <Experience />
+      </Canvas>
+    </ChatProvider>
   );
 }

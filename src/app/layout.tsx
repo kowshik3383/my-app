@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Health Companion - Your Personal Wellness Assistant",
-  description: "AI-powered health companion with voice conversation, multilingual support, and personalized guidance for your wellness journey",
+  title: "AI Chatbot - Virtual Assistant",
+  description: "Interactive AI chatbot with 3D avatar",
 };
 
 export default function RootLayout({
