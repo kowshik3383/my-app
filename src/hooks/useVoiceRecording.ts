@@ -1,6 +1,13 @@
+"use client";
+
 import { useState, useRef, useCallback } from "react";
 
-interface UseVoiceRecordingReturn {
+export interface UseVoiceRecordingOptions {
+  language?: string;
+  onBargeIn?: () => void; // called when user speaks while avatar is speaking
+}
+
+export interface UseVoiceRecordingReturn {
   isRecording: boolean;
   transcript: string;
   startRecording: () => void;
@@ -8,17 +15,30 @@ interface UseVoiceRecordingReturn {
   error: string | null;
 }
 
-export function useVoiceRecording(): UseVoiceRecordingReturn {
+const LANG_MAP: Record<string, string> = {
+  en: "en-US",
+  hi: "hi-IN",
+  ta: "ta-IN",
+  te: "te-IN",
+  bn: "bn-IN",
+};
+
+export function useVoiceRecording(
+  options: UseVoiceRecordingOptions = {}
+): UseVoiceRecordingReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
+  const hasSpokenRef = useRef(false);
+
+  const langCode = LANG_MAP[options.language || "en"] || "en-US";
 
   const startRecording = useCallback(() => {
     setError(null);
     setTranscript("");
+    hasSpokenRef.current = false;
 
-    // Check if browser supports Web Speech API
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -31,7 +51,7 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = "en-US"; // This will be dynamic based on user's language preference
+      recognition.lang = langCode;
 
       recognition.onstart = () => {
         setIsRecording(true);
@@ -42,20 +62,30 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
         let finalTranscript = "";
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
+          const t = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + " ";
+            finalTranscript += t + " ";
           } else {
-            interimTranscript += transcript;
+            interimTranscript += t;
           }
         }
 
-        setTranscript(finalTranscript || interimTranscript);
+        const combined = finalTranscript || interimTranscript;
+        setTranscript(combined);
+
+        // Barge-in detection: first speech result triggers interrupt callback
+        if (!hasSpokenRef.current && combined.trim().length > 0) {
+          hasSpokenRef.current = true;
+          options.onBargeIn?.();
+        }
       };
 
       recognition.onerror = (event: any) => {
-        console.error("Speech recognition error:", event.error);
-        setError(`Error: ${event.error}`);
+        // no-speech is not a real error
+        if (event.error !== "no-speech") {
+          console.error("Speech recognition error:", event.error);
+          setError(`Error: ${event.error}`);
+        }
         setIsRecording(false);
       };
 
@@ -69,7 +99,7 @@ export function useVoiceRecording(): UseVoiceRecordingReturn {
       console.error("Error starting speech recognition:", err);
       setError("Failed to start speech recognition");
     }
-  }, []);
+  }, [langCode, options]);
 
   const stopRecording = useCallback(() => {
     if (recognitionRef.current) {

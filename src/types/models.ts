@@ -9,6 +9,10 @@ export interface User {
   language: string;
   diseaseFocus: string;
   customTopic?: string;
+  /** Selected voice ID (ElevenLabs or browser) */
+  selectedVoiceId?: string;
+  /** User's real name (extracted from conversations) */
+  userName?: string;
 }
 
 export interface Session {
@@ -16,6 +20,8 @@ export interface Session {
   createdAt: Date;
   updatedAt: Date;
   userId: ObjectId;
+  /** Session has been summarized into episodic memory */
+  summarized?: boolean;
 }
 
 export interface Message {
@@ -26,4 +32,20 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   audioUrl?: string;
+  audioBase64?: string;
+  lipsync?: any;
+  animation?: string;
+  facialExpression?: string;
+  emotionState?: string;
+  emotionIntensity?: number;
 }
+
+// Re-export memory types for convenience
+export type {
+  ShortTermMemory,
+  LongTermMemory,
+  EpisodicMemory,
+  EmotionalMemory,
+  MemoryContext,
+  ExtractedMemory,
+} from "@/types/memory";

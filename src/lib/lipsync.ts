@@ -1,32 +1,38 @@
-// Simple lipsync generator based on phonetic patterns
-// This creates mouth cues that sync with the audio
+/**
+ * Emotion-Driven Lipsync + Animation Engine
+ * Integrates with EmotionStateMachine for nuanced avatar behavior
+ */
 
-interface MouthCue {
+import { selectEmotionDrivenAnimation, calculateEmotionIntensity } from "@/lib/emotion";
+
+export interface MouthCue {
   start: number;
   end: number;
   value: string; // Viseme code (A-H, X)
 }
 
-interface LipsyncData {
+export interface LipsyncData {
   mouthCues: MouthCue[];
 }
 
 /**
- * Generate lipsync data from text
- * This is a simplified version - for production, use proper phonetic analysis
+ * Generate lipsync data from text with emotion-aware timing
  */
 export function generateLipsync(text: string, duration: number = 3): LipsyncData {
-  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const words = text.split(/\s+/).filter((w) => w.length > 0);
   const mouthCues: MouthCue[] = [];
-  
-  if (words.length === 0) {
-    return { mouthCues: [] };
-  }
 
-  const timePerWord = duration / words.length;
+  if (words.length === 0) return { mouthCues: [] };
+
+  // Adjust timing based on sentence structure
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+  const pauseRatio = Math.min(0.15, (sentences.length * 0.04)); // pauses between sentences
+  const speechDuration = duration * (1 - pauseRatio);
+  const timePerWord = speechDuration / words.length;
+
   let currentTime = 0;
 
-  words.forEach((word) => {
+  words.forEach((word, wordIdx) => {
     const phonemes = wordToPhonemes(word.toLowerCase());
     const timePerPhoneme = timePerWord / phonemes.length;
 
@@ -38,112 +44,110 @@ export function generateLipsync(text: string, duration: number = 3): LipsyncData
       });
       currentTime += timePerPhoneme;
     });
+
+    // Add brief pause after sentence-ending punctuation
+    if (word.match(/[.!?]$/)) {
+      currentTime += timePerWord * 0.5;
+    }
   });
 
   return { mouthCues };
 }
 
 /**
- * Convert word to phoneme visemes
- * Simplified mapping - real implementation would use proper phonetic analysis
+ * Convert word to phoneme visemes with improved mapping
  */
 function wordToPhonemes(word: string): string[] {
   const phonemes: string[] = [];
-  
-  // Simple vowel and consonant detection
-  for (let i = 0; i < word.length; i++) {
-    const char = word[i];
-    const nextChar = word[i + 1] || '';
-    
-    // Vowel sounds
-    if ('aeiou'.includes(char)) {
-      if (char === 'a') phonemes.push('D'); // Open mouth (AA)
-      else if (char === 'e') phonemes.push('C'); // Slight smile (I)
-      else if (char === 'i') phonemes.push('C');
-      else if (char === 'o') phonemes.push('E'); // Rounded (O)
-      else if (char === 'u') phonemes.push('F'); // Rounded forward (U)
+  const clean = word.replace(/[^a-z]/g, "");
+
+  for (let i = 0; i < clean.length; i++) {
+    const char = clean[i];
+    const nextChar = clean[i + 1] || "";
+
+    // Digraphs first
+    if (char === "t" && nextChar === "h") {
+      phonemes.push("H"); i++; continue; // TH
     }
-    // Consonant sounds
-    else if (char === 'p' || char === 'b' || char === 'm') {
-      phonemes.push('A'); // Lips together (PP)
+    if (char === "s" && nextChar === "h") {
+      phonemes.push("H"); i++; continue; // SH → TH viseme approximation
     }
-    else if (char === 'f' || char === 'v') {
-      phonemes.push('G'); // Teeth on lip (FF)
+    if (char === "c" && nextChar === "h") {
+      phonemes.push("B"); i++; continue; // CH
     }
-    else if (char === 't' || char === 'd' || char === 'n' || char === 'l') {
-      phonemes.push('B'); // Tongue up (kk)
-    }
-    else if (char === 's' || char === 'z' || char === 'th') {
-      phonemes.push('H'); // Teeth close (TH)
-      if (char === 't' && nextChar === 'h') i++; // Skip next 'h'
-    }
-    else {
-      phonemes.push('X'); // Rest position
-    }
+
+    // Vowels
+    if (char === "a") { phonemes.push("D"); continue; }
+    if (char === "e") { phonemes.push("C"); continue; }
+    if (char === "i") { phonemes.push("C"); continue; }
+    if (char === "o") { phonemes.push("E"); continue; }
+    if (char === "u") { phonemes.push("F"); continue; }
+
+    // Bilabials
+    if ("pbm".includes(char)) { phonemes.push("A"); continue; }
+
+    // Labiodentals
+    if ("fv".includes(char)) { phonemes.push("G"); continue; }
+
+    // Alveolars
+    if ("tdnl".includes(char)) { phonemes.push("B"); continue; }
+
+    // Sibilants
+    if ("sz".includes(char)) { phonemes.push("H"); continue; }
+
+    // Velars / other
+    if ("kgqx".includes(char)) { phonemes.push("B"); continue; }
+
+    // Approximants
+    if ("rwy".includes(char)) { phonemes.push("C"); continue; }
+
+    // Default
+    phonemes.push("X");
   }
 
-  // If no phonemes generated, return rest position
-  return phonemes.length > 0 ? phonemes : ['X'];
+  return phonemes.length > 0 ? phonemes : ["X"];
 }
 
 /**
- * Determine animation based on text content and context
+ * Emotion-driven animation selection (replaces basic keyword matching)
  */
 export function selectAnimation(text: string): string {
-  const lowerText = text.toLowerCase();
-  
-  // Check for emotional/action keywords
-  if (lowerText.includes('congratulations') || lowerText.includes('great job') || lowerText.includes('excellent')) {
-    return 'Rumba Dancing';
-  }
-  if (lowerText.includes('sorry') || lowerText.includes('unfortunately') || lowerText.includes('concerned')) {
-    return 'Crying';
-  }
-  if (lowerText.includes('angry') || lowerText.includes('frustrated') || lowerText.includes('serious')) {
-    return 'Angry';
-  }
-  if (lowerText.includes('haha') || lowerText.includes('funny') || lowerText.includes('amusing')) {
-    return 'Laughing';
-  }
-  if (lowerText.includes('scary') || lowerText.includes('worried') || lowerText.includes('afraid')) {
-    return 'Terrified';
-  }
-  
-  // Default talking animations (rotate between them)
-  const talkingAnimations = ['Talking_0', 'Talking_1', 'Talking_2'];
-  return talkingAnimations[Math.floor(Math.random() * talkingAnimations.length)];
+  const result = selectEmotionDrivenAnimation(text);
+  return result.animation;
 }
 
 /**
- * Determine facial expression based on text content
+ * Emotion-driven facial expression selection
  */
 export function selectFacialExpression(text: string): string {
-  const lowerText = text.toLowerCase();
-  
-  // Emotional keywords
-  if (lowerText.includes('congratulations') || lowerText.includes('great') || lowerText.includes('excellent') || lowerText.includes('wonderful')) {
-    return 'smile';
-  }
-  if (lowerText.includes('sorry') || lowerText.includes('unfortunately') || lowerText.includes('sad')) {
-    return 'sad';
-  }
-  if (lowerText.includes('wow') || lowerText.includes('amazing') || lowerText.includes('surprising')) {
-    return 'surprised';
-  }
-  if (lowerText.includes('serious') || lowerText.includes('important') || lowerText.includes('warning')) {
-    return 'angry';
-  }
-  
-  // Default friendly expression
-  return 'smile';
+  const result = selectEmotionDrivenAnimation(text);
+  return result.facialExpression;
 }
 
 /**
- * Estimate audio duration from text (rough approximation)
- * Average speaking rate: ~150 words per minute = 2.5 words per second
+ * Full emotion metadata for animation engine
+ */
+export function selectAnimationWithEmotion(text: string): {
+  animation: string;
+  facialExpression: string;
+  emotionState: string;
+  intensity: number;
+} {
+  return selectEmotionDrivenAnimation(text);
+}
+
+/**
+ * Estimate audio duration from text
+ * Accounts for punctuation pauses and speaking rate
  */
 export function estimateAudioDuration(text: string): number {
-  const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
-  const wordsPerSecond = 2.5;
-  return Math.max(wordCount / wordsPerSecond, 1); // Minimum 1 second
+  const wordCount = text.split(/\s+/).filter((w) => w.length > 0).length;
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0).length;
+  const commas = (text.match(/,/g) || []).length;
+
+  // Base: 2.5 words/sec + pause overhead
+  const baseTime = wordCount / 2.5;
+  const pauseTime = sentences * 0.3 + commas * 0.1;
+
+  return Math.max(baseTime + pauseTime, 1);
 }
