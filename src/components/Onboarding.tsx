@@ -5,21 +5,46 @@ import { useStore, type AIRole, type AIModulation, type Language, type DiseaseFo
 import {
   Heart, Brain, Activity, Flower2, UserRound, Stethoscope, Trophy, Users,
   Smile, Zap, Briefcase, Sparkles, Moon,
-  Globe, MessageCircle, ArrowRight, ArrowLeft, Check
+  Globe, MessageCircle, ArrowRight, ArrowLeft, Check,
+  BookOpen,
+  Crown,
+  Flame,
+  GraduationCap,
+  HandHeart,
+  HeartHandshake,
+  Sun,
+  Users2
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const roles = [
   { value: "mother", label: "Mother", icon: Heart, description: "Caring & nurturing" },
   { value: "father", label: "Father", icon: UserRound, description: "Supportive & wise" },
-  { value: "sister", label: "Sister", icon: Flower2, description: "Empathetic" },
-  { value: "brother", label: "Brother", icon: Users, description: "Protective" },
-  { value: "grandparent", label: "Grandparent", icon: Heart, description: "Loving & wise" },
-  { value: "doctor", label: "Doctor", icon: Stethoscope, description: "Professional" },
-  { value: "coach", label: "Coach", icon: Trophy, description: "Motivating" },
-  { value: "friend", label: "Friend", icon: MessageCircle, description: "Companion" },
-] as const;
+  { value: "sister", label: "Sister", icon: Flower2, description: "Empathetic & understanding" },
+  { value: "brother", label: "Brother", icon: Users, description: "Protective & reliable" },
+  { value: "grandparent", label: "Grandparent", icon: Heart, description: "Loving & experienced" },
 
+  { value: "doctor", label: "Doctor", icon: Stethoscope, description: "Professional & knowledgeable" },
+  { value: "therapist", label: "Therapist", icon: Brain, description: "Supportive & insightful" },
+  { value: "nurse", label: "Nurse", icon: Activity, description: "Compassionate & attentive" },
+
+  { value: "coach", label: "Coach", icon: Trophy, description: "Motivating & disciplined" },
+  { value: "mentor", label: "Mentor", icon: GraduationCap, description: "Guiding & experienced" },
+  { value: "teacher", label: "Teacher", icon: BookOpen, description: "Educating & patient" },
+
+  { value: "friend", label: "Friend", icon: MessageCircle, description: "Loyal & supportive" },
+  { value: "best_friend", label: "Best Friend", icon: Sparkles, description: "Fun & trustworthy" },
+  { value: "girlfriend", label: "Girlfriend", icon: Heart, description: "Loving & affectionate" },
+  { value: "partner", label: "Partner", icon: HeartHandshake, description: "Committed & supportive" },
+
+  { value: "leader", label: "Leader", icon: Crown, description: "Confident & inspiring" },
+  { value: "boss", label: "Boss", icon: Briefcase, description: "Structured & decisive" },
+  { value: "teammate", label: "Teammate", icon: Users2, description: "Collaborative & dependable" },
+
+  { value: "spiritual_guide", label: "Spiritual Guide", icon: Sun, description: "Calm & enlightening" },
+  { value: "motivator", label: "Motivator", icon: Flame, description: "Energetic & uplifting" },
+  { value: "caregiver", label: "Caregiver", icon: HandHeart, description: "Gentle & supportive" },
+] as const;
 const modulations = [
   { value: "soft_caring", label: "Soft & Caring", icon: Smile, description: "Gentle and compassionate" },
   { value: "strict_motivational", label: "Strict & Motivational", icon: Zap, description: "Direct and inspiring" },
