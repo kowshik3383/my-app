@@ -7,7 +7,8 @@ import Header from "@/components/Header";
 import { Toaster } from "react-hot-toast";
 
 export default function Home() {
-  const { isOnboarded } = useStore();
+  const { isOnboarded, userProfile } = useStore();
+  const role = userProfile?.aiRole ?? "friend";
 
   if (!isOnboarded) {
     return (
@@ -19,7 +20,8 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    // data-role drives all CSS variable cascades for role-based UI morphing
+    <div className="h-screen flex flex-col" data-role={role}>
       <Header />
       <main className="flex-1 overflow-hidden">
         <AvatarChat />

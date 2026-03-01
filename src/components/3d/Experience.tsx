@@ -8,6 +8,8 @@ import {
 } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useChat } from "@/hooks/useChat";
+import { useStore } from "@/store/useStore";
+import { getRoleTheme } from "@/lib/roleSystem";
 import { Avatar } from "./Avatar";
 
 interface DotsProps {
@@ -21,12 +23,7 @@ const Dots = (props: DotsProps) => {
   useEffect(() => {
     if (loading) {
       const interval = setInterval(() => {
-        setLoadingText((prevText) => {
-          if (prevText.length > 2) {
-            return ".";
-          }
-          return prevText + ".";
-        });
+        setLoadingText((prev) => (prev.length > 2 ? "." : prev + "."));
       }, 800);
       return () => clearInterval(interval);
     } else {
@@ -49,6 +46,11 @@ const Dots = (props: DotsProps) => {
 export const Experience = () => {
   const cameraControls = useRef<CameraControls>(null);
   const { cameraZoomed } = useChat();
+  const { userProfile } = useStore();
+
+  // Role-based environment lighting
+  const roleTheme = getRoleTheme(userProfile?.aiRole ?? "friend");
+  const environmentPreset = roleTheme.environmentPreset;
 
   useEffect(() => {
     if (cameraControls.current) {
@@ -69,8 +71,8 @@ export const Experience = () => {
   return (
     <>
       <CameraControls ref={cameraControls} />
-      <Environment preset="sunset" />
-      {/* Wrapping Dots into Suspense to prevent Blink when Troika/Font is loaded */}
+      {/* Role-driven environment lighting changes the mood of the scene */}
+      <Environment preset={environmentPreset} />
       <Suspense>
         <Dots position-y={1.75} position-x={-0.02} />
       </Suspense>

@@ -1,0 +1,4 @@
+1)create a bunch of models for different roles 
+2)if possible users can create and manage the outfit of avatar
+3)create a admin dashboard for the chat history user history glb uploads 
+4)create a slider where n user can select his models

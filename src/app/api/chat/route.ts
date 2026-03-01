@@ -13,10 +13,13 @@ import {
   ensureMemoryIndexes,
 } from "@/lib/memory";
 import { analyzeEmotionSignals } from "@/lib/emotion";
+import { maskPII, getPIIReport } from "@/lib/piiDetection";
+import { logPIIDetection, logMemoryUpdate, ensureAuditIndexes } from "@/lib/auditLog";
+import { getMemoryBiasPrompt, getRolePersonality } from "@/lib/roleSystem";
 import type { AIModulation } from "@/store/useStore";
 
-// Ensure memory indexes on first run
-let indexesEnsured = false;
+// One-time initialization
+let initialized = false;
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,10 +29,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Ensure indexes (once)
-    if (!indexesEnsured) {
-      await ensureMemoryIndexes();
-      indexesEnsured = true;
+    // One-time setup
+    if (!initialized) {
+      await Promise.all([ensureMemoryIndexes(), ensureAuditIndexes()]);
+      initialized = true;
     }
 
     const db = await getDb();
@@ -43,7 +46,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // ── 1. Get conversation history (last 20 turns) ───────────────────────────
+    // ── 1. PII Detection on incoming message ──────────────────────────────────
+    const piiReport = getPIIReport(message);
+    let processedMessage = message;
+
+    if (piiReport.hasPII) {
+      const { sanitized } = maskPII(message);
+      processedMessage = sanitized;
+      // Non-blocking audit log
+      logPIIDetection(userId, piiReport.types, "user_message", true).catch(console.error);
+    }
+
+    // ── 2. Get conversation history (short-term: last 20 turns) ───────────────
     const previousMessages = await messagesCollection
       .find({ sessionId: new ObjectId(sessionId) })
       .sort({ createdAt: 1 })
@@ -55,30 +69,30 @@ export async function POST(request: NextRequest) {
       content: msg.content,
     }));
 
-    // ── 2. Retrieve multi-layer memory context ────────────────────────────────
-    const memoryContext = await retrieveMemoryContext(userId, sessionId, message);
+    // ── 3. Retrieve multi-layer memory context ────────────────────────────────
+    const memoryContext = await retrieveMemoryContext(userId, sessionId, processedMessage);
 
-    // ── 3. Save user message to DB ────────────────────────────────────────────
+    // ── 4. Save user message ───────────────────────────────────────────────────
     await messagesCollection.insertOne({
       sessionId: new ObjectId(sessionId),
       userId: new ObjectId(userId),
       role: "user",
-      content: message,
+      content: processedMessage,
       createdAt: new Date(),
     });
 
-    // ── 4. Update short-term memory with user turn ─────────────────────────────
-    const signals = analyzeEmotionSignals(message);
+    // ── 5. Update short-term memory ────────────────────────────────────────────
+    const signals = analyzeEmotionSignals(processedMessage);
     await updateShortTermMemory(
       userId,
       sessionId,
-      { role: "user", content: message, timestamp: new Date() },
-      extractTopicFromMessage(message),
+      { role: "user", content: processedMessage, timestamp: new Date() },
+      extractTopicFromMessage(processedMessage),
       signalsToEmotion(signals)
     );
 
-    // ── 5. Generate AI response with memory context ───────────────────────────
-    const aiResponse = await generateAIResponse(message, {
+    // ── 6. Generate AI response with role-enriched context ────────────────────
+    const aiResponse = await generateAIResponse(processedMessage, {
       role: user.aiRole as any,
       modulation: user.aiModulation as any,
       language: user.language as any,
@@ -88,19 +102,18 @@ export async function POST(request: NextRequest) {
       memoryContext,
     });
 
-    // ── 6. Emotion-driven animation + lipsync ─────────────────────────────────
+    // ── 7. Emotion-driven animation + lipsync ─────────────────────────────────
     const duration = estimateAudioDuration(aiResponse);
     const lipsync = generateLipsync(aiResponse, duration);
     const { animation, facialExpression, emotionState, intensity } =
       selectAnimationWithEmotion(aiResponse);
 
-    // ── 7. Voice generation (optional, non-blocking) ──────────────────────────
+    // ── 8. Voice generation (optional, non-blocking) ──────────────────────────
     let audioBase64 = "";
     const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 
     if (ELEVENLABS_API_KEY) {
       try {
-        // Use user's selected voice, fall back to modulation default
         const voiceId =
           (user.selectedVoiceId as string) ||
           VOICE_IDS[user.aiModulation as AIModulation] ||
@@ -117,7 +130,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── 8. Save AI message ────────────────────────────────────────────────────
+    // ── 9. Save AI message ─────────────────────────────────────────────────────
     const aiMessageResult = await messagesCollection.insertOne({
       sessionId: new ObjectId(sessionId),
       userId: new ObjectId(userId),
@@ -132,18 +145,16 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     });
 
-    // ── 9. Async memory updates (non-blocking) ─────────────────────────────────
-    updateMemoryAsync(userId, sessionId, message, aiResponse);
+    // ── 10. Async memory updates (non-blocking) ────────────────────────────────
+    updateMemoryAsync(userId, sessionId, processedMessage, aiResponse, user.aiRole);
 
-    // ── 10. Update session timestamp ──────────────────────────────────────────
+    // ── 11. Update session ─────────────────────────────────────────────────────
     await sessionsCollection.updateOne(
       { _id: new ObjectId(sessionId) },
       { $set: { updatedAt: new Date() } }
     );
 
-    const aiMessage = await messagesCollection.findOne({
-      _id: aiMessageResult.insertedId,
-    });
+    const aiMessage = await messagesCollection.findOne({ _id: aiMessageResult.insertedId });
 
     return NextResponse.json({
       message: {
@@ -166,56 +177,81 @@ export async function POST(request: NextRequest) {
 }
 
 // ─── Async Memory Update Pipeline ─────────────────────────────────────────────
+
 async function updateMemoryAsync(
   userId: string,
   sessionId: string,
   userMessage: string,
-  assistantMessage: string
+  assistantMessage: string,
+  roleId?: string
 ): Promise<void> {
   try {
     const extracted = extractMemoryFromText(userMessage, assistantMessage);
     const signals = analyzeEmotionSignals(userMessage);
 
-    await Promise.all([
-      // Update long-term memory (name, goals, topics)
-      updateLongTermMemory(userId, extracted),
+    // Role-based memory prioritization
+    const rolePersonality = roleId ? getRolePersonality(roleId) : null;
+    const memoryBias = rolePersonality?.memoryBias ?? "balanced";
 
-      // Update emotional memory
+    const updates: Promise<void>[] = [
       updateEmotionalMemory(userId, sessionId, signals.valence, extracted.emotionLabel),
-
-      // Update short-term memory with AI turn
       updateShortTermMemory(
-        userId,
-        sessionId,
+        userId, sessionId,
         { role: "assistant", content: assistantMessage, timestamp: new Date() },
         extractTopicFromMessage(userMessage),
         extracted.emotionLabel
       ),
+    ];
 
-      // Save episodic memories for important events
-      ...extracted.events.map((event) =>
-        saveEpisodicMemory(
-          userId,
-          sessionId,
-          event,
-          `User mentioned: ${event}`,
-          signals.valence
-        )
-      ),
-    ]);
+    // Bias: emotional roles always store long-term emotional data
+    if (memoryBias === "emotional" || memoryBias === "relational" || memoryBias === "balanced") {
+      updates.push(updateLongTermMemory(userId, extracted));
+    }
+
+    // Bias: clinical roles also always update facts
+    if (memoryBias === "clinical" || memoryBias === "balanced") {
+      if (extracted.goals.length > 0 || extracted.userName) {
+        updates.push(updateLongTermMemory(userId, extracted));
+      }
+    }
+
+    // Motivational roles track goals aggressively
+    if (memoryBias === "motivational") {
+      updates.push(updateLongTermMemory(userId, extracted));
+    }
+
+    // Save episodic memories for important events
+    const episodicUpdates = extracted.events.map((event) =>
+      saveEpisodicMemory(userId, sessionId, event, `User mentioned: ${event}`, signals.valence)
+    );
+
+    await Promise.all([...updates, ...episodicUpdates]);
+
+    // Audit log memory update
+    const updatedFields = [
+      extracted.userName && "userName",
+      extracted.goals.length > 0 && "goals",
+      extracted.topics.length > 0 && "topics",
+      extracted.events.length > 0 && "episodic",
+    ].filter(Boolean) as string[];
+
+    if (updatedFields.length > 0) {
+      logMemoryUpdate(userId, "multi_layer", updatedFields).catch(console.error);
+    }
   } catch (err) {
     console.error("[MemoryUpdate] Non-critical error:", err);
   }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function extractTopicFromMessage(message: string): string {
-  const words = message
+  return message
     .toLowerCase()
     .split(/\W+/)
     .filter((w) => w.length > 4)
-    .slice(0, 3);
-  return words.join(", ");
+    .slice(0, 3)
+    .join(", ");
 }
 
 function signalsToEmotion(signals: ReturnType<typeof analyzeEmotionSignals>): any {

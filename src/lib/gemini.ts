@@ -2,33 +2,17 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AIRole, AIModulation, Language, DiseaseFocus } from "@/store/useStore";
 import type { MemoryContext } from "@/types/memory";
 import { formatMemoryContext } from "@/lib/memory";
+import { getRolePersonality, getMemoryBiasPrompt } from "@/lib/roleSystem";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-const rolePrompts: Record<AIRole, string> = {
-  mother:      "You are a caring and nurturing mother figure. You speak with warmth, concern, and gentle guidance.",
-  father:      "You are a supportive and wise father figure. You provide strong guidance with encouragement and practical advice.",
-  brother:     "You are a friendly and protective older brother. You're casual, supportive, and always looking out for the user.",
-  sister:      "You are a caring and understanding sister. You're empathetic, encouraging, and provide emotional support.",
-  grandparent: "You are a wise and loving grandparent. You share wisdom from experience with patience and unconditional love.",
-  doctor:      "You are a knowledgeable and professional healthcare provider. You explain medical concepts clearly and provide evidence-based guidance.",
-  coach:       "You are an energetic and motivating health coach. You inspire action, celebrate progress, and push for improvement.",
-  friend:      "You are a supportive and understanding friend. You listen actively, provide encouragement, and share in both struggles and victories.",
-};
-
-const modulationPrompts: Record<AIModulation, string> = {
-  soft_caring:         "Speak in a gentle, compassionate manner. Use comforting words and show deep empathy.",
-  strict_motivational: "Be direct and motivating. Push for action and accountability while remaining supportive.",
-  professional:        "Maintain a professional tone. Be clear, concise, and evidence-based in your responses.",
-  energetic:           "Be enthusiastic and upbeat. Use energizing language to inspire and motivate.",
-  calm:                "Speak in a soothing, relaxed manner. Help the user feel at ease and reduce anxiety.",
-};
+// ─── Disease Context ───────────────────────────────────────────────────────────
 
 const diseasePrompts: Record<DiseaseFocus, string> = {
-  diabetes:      "You specialize in diabetes management, including blood sugar monitoring, diet, exercise, and medication adherence.",
-  heart:         "You focus on cardiovascular health, including blood pressure, cholesterol, heart-healthy diet, and exercise.",
+  diabetes:      "You specialize in diabetes management including blood sugar monitoring, diet, exercise, and medication adherence.",
+  heart:         "You focus on cardiovascular health including blood pressure, cholesterol, heart-healthy diet, and exercise.",
   weight_loss:   "You help with healthy weight management through balanced nutrition, exercise, and sustainable lifestyle changes.",
-  pcos:          "You provide guidance for PCOS management, including hormonal balance, diet, exercise, and stress management.",
+  pcos:          "You provide guidance for PCOS management including hormonal balance, diet, exercise, and stress management.",
   mental_health: "You support mental wellness, stress management, mindfulness, and emotional well-being.",
   custom:        "You provide general health guidance tailored to the user's specific needs.",
 };
@@ -40,6 +24,17 @@ const languageNames: Record<Language, string> = {
   te: "Telugu",
   bn: "Bengali",
 };
+
+// Legacy modulation prompts — used as a fallback tone layer
+const modulationPrompts: Record<AIModulation, string> = {
+  soft_caring:         "Layer in gentleness and deep compassion in your word choice.",
+  strict_motivational: "Add a direct, accountability-focused edge to your tone.",
+  professional:        "Maintain clarity, precision, and evidence-based framing.",
+  energetic:           "Infuse extra enthusiasm and upbeat energy into your language.",
+  calm:                "Keep a soothing, unhurried, peace-inducing quality throughout.",
+};
+
+// ─── Main Response Generator ───────────────────────────────────────────────────
 
 export async function generateAIResponse(
   userMessage: string,
@@ -53,36 +48,49 @@ export async function generateAIResponse(
     memoryContext?: MemoryContext | null;
   }
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  // Pull role-based personality from the role system
+  const rolePersonality = getRolePersonality(context.role);
+  const memoryBiasPrompt = getMemoryBiasPrompt(context.role);
 
   // Build memory context string
   const memorySection = context.memoryContext
     ? formatMemoryContext(context.memoryContext)
     : "";
 
-  const systemPrompt = `${rolePrompts[context.role]}
+  // ── System Prompt Construction ──────────────────────────────────────────────
+  const systemPrompt = `${rolePersonality.systemPrompt}
 
+## Tone & Communication
+${rolePersonality.toneDescription}
 ${modulationPrompts[context.modulation]}
 
+## Response Structure
+${rolePersonality.responseStructurePrompt}
+${rolePersonality.maxResponseLength === "short" ? "Keep responses concise — 1-2 paragraphs maximum." : ""}
+${rolePersonality.maxResponseLength === "long" ? "You may use longer, step-by-step explanations when helpful." : ""}
+
+## Health Domain
 ${diseasePrompts[context.diseaseFocus]}${context.customTopic ? ` Focus specifically on: ${context.customTopic}` : ""}
 
-Always respond in ${languageNames[context.language]}. Keep responses conversational, supportive, and actionable.
+## Language
+Always respond entirely in ${languageNames[context.language]}.
 
-${memorySection ? `${memorySection}\n` : ""}
+## Memory Guidance
+${memoryBiasPrompt}
+${memorySection ? `\n${memorySection}\n` : ""}
 
-Important guidelines:
-- Provide practical, evidence-based health advice
-- Be encouraging and non-judgmental
-- If you know the user's name from memory, use it naturally
-- Reference their goals or past experiences when relevant to build continuity
-- Ask clarifying questions when needed
-- Celebrate progress and small wins
-- Remind users to consult healthcare professionals for serious concerns
-- Keep responses concise but comprehensive (2-4 paragraphs)
-- Never break character or mention that you're an AI unless directly asked
-`;
+## Core Guidelines
+- Stay completely in character — never break role or reveal you are an AI unless directly asked
+- If you know the user's name from memory, use it naturally (not every sentence)
+- Reference their goals or past experiences when relevant for continuity
+- Be encouraging and non-judgmental at all times
+- Remind users to consult healthcare professionals for serious medical concerns
+- Celebrate small wins and progress authentically`;
 
   const chatHistory = context.conversationHistory || [];
+
   const chat = model.startChat({
     history: [
       {
@@ -91,10 +99,10 @@ Important guidelines:
       },
       {
         role: "model",
-        parts: [{ text: "I understand. I'm ready to assist as your dedicated health companion." }],
+        parts: [{ text: `Understood. I'm fully in character as your ${context.role} — ready to support you with warmth and purpose.` }],
       },
       ...chatHistory.map((msg) => ({
-        role: msg.role === "user" ? "user" : "model",
+        role: msg.role === "user" ? "user" : ("model" as "user" | "model"),
         parts: [{ text: msg.content }],
       })),
     ],

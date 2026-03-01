@@ -2,7 +2,15 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { EmotionState } from "@/lib/emotion";
 
-export type AIRole = "mother" | "father" | "brother" | "sister" | "grandparent" | "doctor" | "coach" | "friend";
+// ─── Expanded Role Type (all 20 roles) ────────────────────────────────────────
+export type AIRole =
+  | "mother" | "father" | "sister" | "brother" | "grandparent"
+  | "doctor" | "therapist" | "nurse"
+  | "coach" | "mentor" | "teacher"
+  | "friend" | "best_friend" | "girlfriend" | "partner"
+  | "leader" | "boss" | "teammate"
+  | "spiritual_guide" | "motivator" | "caregiver";
+
 export type AIModulation = "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
 export type Language = "en" | "hi" | "ta" | "te" | "bn";
 export type DiseaseFocus = "diabetes" | "heart" | "weight_loss" | "pcos" | "mental_health" | "custom";
@@ -22,9 +30,7 @@ interface UserProfile {
   language: Language;
   diseaseFocus: DiseaseFocus;
   customTopic?: string;
-  /** Selected ElevenLabs voice ID (persisted) */
   selectedVoiceId?: string;
-  /** User's display name (extracted from conversation) */
   userName?: string;
 }
 
@@ -37,13 +43,13 @@ interface EmotionHUD {
 interface SpeechControl {
   isSpeaking: boolean;
   isInterrupted: boolean;
-  interruptProgress: number; // 0-1, how far through speech when interrupted
+  interruptProgress: number;
 }
 
 interface Store {
   // User profile
   userProfile: UserProfile | null;
-  setUserProfile: (profile: UserProfile) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
   updateUserName: (name: string) => void;
   updateSelectedVoice: (voiceId: string) => void;
   isOnboarded: boolean;

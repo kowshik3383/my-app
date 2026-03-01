@@ -6,29 +6,23 @@
 }
 
 @theme inline {
-  /* Health-themed color palette */
-  --color-primary: #10b981; /* green-500 - health & vitality */
-  --color-primary-dark: #059669; /* green-600 */
-  --color-primary-light: #d1fae5; /* green-100 */
-  
-  --color-secondary: #3b82f6; /* blue-500 - trust & calm */
-  --color-secondary-dark: #2563eb; /* blue-600 */
-  --color-secondary-light: #dbeafe; /* blue-100 */
-  
-  --color-accent: #8b5cf6; /* purple-500 - wellness */
-  --color-accent-light: #ede9fe; /* purple-100 */
-  
-  --color-success: #10b981; /* green-500 */
-  --color-warning: #f59e0b; /* amber-500 */
-  --color-error: #ef4444; /* red-500 */
-  --color-info: #3b82f6; /* blue-500 */
-  
+  /* Default health-themed palette */
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
+  --color-primary-light: #d1fae5;
+  --color-secondary: #3b82f6;
+  --color-secondary-dark: #2563eb;
+  --color-secondary-light: #dbeafe;
+  --color-accent: #8b5cf6;
+  --color-accent-light: #ede9fe;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: #f9fafb; /* gray-50 */
-  --color-border: #e5e7eb; /* gray-200 */
-  
-  /* Typography */
+  --color-muted: #f9fafb;
+  --color-border: #e5e7eb;
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 }
@@ -39,6 +33,253 @@
     --foreground: #f1f5f9;
   }
 }
+
+/* ─── Default Role Variables (friend/default fallback) ──────────────────────── */
+:root {
+  --role-primary: #059669;
+  --role-secondary: #34d399;
+  --role-accent: #10b981;
+  --role-gradient-from: #ecfdf5;
+  --role-gradient-via: #d1fae5;
+  --role-gradient-to: #f0fdf4;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 16px;
+}
+
+/* ─── Role-Specific CSS Variables ────────────────────────────────────────────── */
+
+[data-role="mother"] {
+  --role-primary: #f43f5e;
+  --role-secondary: #fda4af;
+  --role-accent: #fb7185;
+  --role-gradient-from: #fff1f2;
+  --role-gradient-via: #fce7f3;
+  --role-gradient-to: #fdf4ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 22px;
+}
+
+[data-role="father"] {
+  --role-primary: #1d4ed8;
+  --role-secondary: #60a5fa;
+  --role-accent: #3b82f6;
+  --role-gradient-from: #eff6ff;
+  --role-gradient-via: #dbeafe;
+  --role-gradient-to: #f0f9ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 14px;
+}
+
+[data-role="sister"] {
+  --role-primary: #a855f7;
+  --role-secondary: #e879f9;
+  --role-accent: #9333ea;
+  --role-gradient-from: #faf5ff;
+  --role-gradient-via: #f5d0fe;
+  --role-gradient-to: #fdf4ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 20px;
+}
+
+[data-role="brother"] {
+  --role-primary: #0284c7;
+  --role-secondary: #38bdf8;
+  --role-accent: #0369a1;
+  --role-gradient-from: #f0f9ff;
+  --role-gradient-via: #e0f2fe;
+  --role-gradient-to: #ecfeff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 12px;
+}
+
+[data-role="grandparent"] {
+  --role-primary: #b45309;
+  --role-secondary: #fbbf24;
+  --role-accent: #d97706;
+  --role-gradient-from: #fffbeb;
+  --role-gradient-via: #fef3c7;
+  --role-gradient-to: #fefce8;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 18px;
+}
+
+[data-role="doctor"] {
+  --role-primary: #0891b2;
+  --role-secondary: #22d3ee;
+  --role-accent: #0e7490;
+  --role-gradient-from: #ecfeff;
+  --role-gradient-via: #e0f2fe;
+  --role-gradient-to: #f0f9ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 8px;
+}
+
+[data-role="therapist"] {
+  --role-primary: #4a7c59;
+  --role-secondary: #a7c4ac;
+  --role-accent: #6b8f71;
+  --role-gradient-from: #f0fdf4;
+  --role-gradient-via: #ecfdf5;
+  --role-gradient-to: #f5f5f0;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 18px;
+}
+
+[data-role="nurse"] {
+  --role-primary: #0d9488;
+  --role-secondary: #5eead4;
+  --role-accent: #0f766e;
+  --role-gradient-from: #f0fdfa;
+  --role-gradient-via: #ccfbf1;
+  --role-gradient-to: #ecfdf5;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 12px;
+}
+
+[data-role="coach"] {
+  --role-primary: #ea580c;
+  --role-secondary: #fbbf24;
+  --role-accent: #f97316;
+  --role-gradient-from: #fff7ed;
+  --role-gradient-via: #fef3c7;
+  --role-gradient-to: #fefce8;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 10px;
+}
+
+[data-role="mentor"] {
+  --role-primary: #7c3aed;
+  --role-secondary: #a78bfa;
+  --role-accent: #6d28d9;
+  --role-gradient-from: #faf5ff;
+  --role-gradient-via: #ede9fe;
+  --role-gradient-to: #f5f3ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 12px;
+}
+
+[data-role="teacher"] {
+  --role-primary: #4338ca;
+  --role-secondary: #818cf8;
+  --role-accent: #3730a3;
+  --role-gradient-from: #eef2ff;
+  --role-gradient-via: #e0e7ff;
+  --role-gradient-to: #ede9fe;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 10px;
+}
+
+[data-role="friend"] {
+  --role-primary: #059669;
+  --role-secondary: #34d399;
+  --role-accent: #10b981;
+  --role-gradient-from: #ecfdf5;
+  --role-gradient-via: #d1fae5;
+  --role-gradient-to: #f0fdf4;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 16px;
+}
+
+[data-role="best_friend"] {
+  --role-primary: #f59e0b;
+  --role-secondary: #fb923c;
+  --role-accent: #d97706;
+  --role-gradient-from: #fffbeb;
+  --role-gradient-via: #fef3c7;
+  --role-gradient-to: #fff7ed;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 22px;
+}
+
+[data-role="girlfriend"] {
+  --role-primary: #ec4899;
+  --role-secondary: #fb923c;
+  --role-accent: #f472b6;
+  --role-gradient-from: #fdf2f8;
+  --role-gradient-via: #fce7f3;
+  --role-gradient-to: #fff7ed;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 24px;
+}
+
+[data-role="partner"] {
+  --role-primary: #be185d;
+  --role-secondary: #fb7185;
+  --role-accent: #9d174d;
+  --role-gradient-from: #fff1f2;
+  --role-gradient-via: #fce7f3;
+  --role-gradient-to: #fdf4ff;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 22px;
+}
+
+[data-role="leader"] {
+  --role-primary: #92400e;
+  --role-secondary: #fbbf24;
+  --role-accent: #854d0e;
+  --role-gradient-from: #fefce8;
+  --role-gradient-via: #fef3c7;
+  --role-gradient-to: #fffbeb;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 8px;
+}
+
+[data-role="boss"] {
+  --role-primary: #374151;
+  --role-secondary: #6b7280;
+  --role-accent: #1f2937;
+  --role-gradient-from: #f9fafb;
+  --role-gradient-via: #f3f4f6;
+  --role-gradient-to: #e5e7eb;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 6px;
+}
+
+[data-role="teammate"] {
+  --role-primary: #047857;
+  --role-secondary: #34d399;
+  --role-accent: #059669;
+  --role-gradient-from: #ecfdf5;
+  --role-gradient-via: #d1fae5;
+  --role-gradient-to: #a7f3d0;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 12px;
+}
+
+[data-role="spiritual_guide"] {
+  --role-primary: #6d28d9;
+  --role-secondary: #fbbf24;
+  --role-accent: #5b21b6;
+  --role-gradient-from: #faf5ff;
+  --role-gradient-via: #ede9fe;
+  --role-gradient-to: #fffbeb;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 20px;
+}
+
+[data-role="motivator"] {
+  --role-primary: #dc2626;
+  --role-secondary: #f97316;
+  --role-accent: #b91c1c;
+  --role-gradient-from: #fff1f2;
+  --role-gradient-via: #fee2e2;
+  --role-gradient-to: #fff7ed;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 10px;
+}
+
+[data-role="caregiver"] {
+  --role-primary: #be185d;
+  --role-secondary: #4ade80;
+  --role-accent: #9d174d;
+  --role-gradient-from: #fff1f2;
+  --role-gradient-via: #fce7f3;
+  --role-gradient-to: #f0fdf4;
+  --role-text-on-primary: #ffffff;
+  --role-bubble-radius: 22px;
+}
+
+/* ─── Base Layer ─────────────────────────────────────────────────────────────── */
 
 @layer base {
   * {
@@ -70,50 +311,54 @@
     font-family: inherit;
   }
 
-  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Remove default button styles */
   button:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--role-primary);
     outline-offset: 2px;
   }
 
-  /* Prevent text selection on interactive elements */
   button, .touch-none {
     -webkit-user-select: none;
     user-select: none;
   }
 
-  /* Improve text rendering */
   p, span, div {
     text-rendering: optimizeLegibility;
   }
 
-  /* Keyboard navigation styles */
   kbd {
     font-family: var(--font-mono);
     font-size: 0.875em;
   }
 }
 
+/* ─── Role-Themed Input Focus ────────────────────────────────────────────────── */
+
+@utility role-input-focus {
+  &:focus {
+    outline: none;
+    border-color: var(--role-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-primary) 20%, transparent);
+  }
+}
+
+/* ─── Custom Utilities ───────────────────────────────────────────────────────── */
+
 @utility scrollbar-thin {
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
   &::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 3px;
   }
-  
   &::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
   }
@@ -132,14 +377,8 @@
 }
 
 @keyframes animate-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @utility fade-in {
@@ -147,12 +386,8 @@
 }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @utility slide-in-from-bottom-2 {
@@ -160,10 +395,6 @@
 }
 
 @keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(0.5rem);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(0.5rem); }
+  to { transform: translateY(0); }
 }

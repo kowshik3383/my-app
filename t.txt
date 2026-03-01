@@ -1,0 +1,94 @@
+1️⃣ Memory Architecture Upgrade (Real AI System)
+
+Right now:
+
+Session-based chat history
+
+Probably sending whole message array to Gemini
+
+That scales badly.
+
+Upgrade to Tiered Memory
+
+Create:
+
+domain/ai/memory/
+  ├── shortTermMemory.ts
+  ├── longTermMemory.ts
+  ├── embeddingService.ts
+  └── contextAssembler.ts
+How it works:
+
+Short-term memory
+
+Last 10–20 messages
+
+Long-term memory
+
+Important facts extracted and stored:
+
+“User has type 2 diabetes”
+
+“User fasting sugar: 145”
+
+“User struggles with late-night snacking”
+
+Store these as structured + embeddings.
+
+Then:
+
+contextAssembler
+  → retrieves relevant memory via embeddings
+  → merges with role prompt
+  → sends minimal optimized context to Gemini
+
+Now:
+
+Lower token cost
+
+Better personalization
+
+Infinite scalability
+
+That’s real AI infra.   
+.
+
+🔐 9️⃣ Security Hardening
+
+Add:
+
+lib/security/
+  ├── encryption.ts
+  ├── dataMasking.ts
+  ├── piiDetector.ts
+  └── auditLogger.ts
+
+Because:
+Health data = sensitive.
+
+Even if it’s not HIPAA regulated,
+build like it is.🎤 7️⃣ Real Voice Agent Architecture
+
+Instead of:
+
+text → generate → convert → play
+
+Upgrade to:
+
+voice/
+  ├── voiceSessionManager.ts
+  ├── realTimeStreaming.ts
+  ├── interruptionHandler.ts
+  └── silenceDetector.ts
+
+Add:
+
+Interrupt AI mid-speech
+
+Stop speaking when user talks
+
+Add breathing delay simulation
+
+Sentence-by-sentence streaming
+
+Voice UX makes or breaks this product.
