@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, ObjectId } from "@/lib/mongodb";
 import { generateAIResponse } from "@/lib/gemini";
-import { generateVoice, VOICE_IDS } from "@/lib/elevenlabs";
-import { generateLipsync, selectAnimation, selectFacialExpression, estimateAudioDuration } from "@/lib/lipsync";
+import { generateCartesiaAudio } from "@/lib/cartesia";
+import { generateLipsync, selectAnimation, selectFacialExpression, estimateAudioDuration, stripEmotionTags } from "@/lib/lipsync";
 import type { AIModulation } from "@/store/useStore";
 
 export async function POST(request: NextRequest) {
@@ -68,25 +68,31 @@ export async function POST(request: NextRequest) {
     const animation = selectAnimation(aiResponse);
     const facialExpression = selectFacialExpression(aiResponse);
     
-    // Make voice generation optional and non-blocking
-    // Generate voice in background (or skip if API key not configured)
-    let audioBase64 = '';
-    const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+    // Generate Cartesia audio with improved error handling
+    let audioDataUrl = '';
+    const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
     
-    // Only generate voice if API key is configured, otherwise client will use browser speech
-    if (ELEVENLABS_API_KEY) {
+    if (CARTESIA_API_KEY) {
       try {
-        const voiceId = VOICE_IDS[user.aiModulation as AIModulation] || VOICE_IDS.professional;
-        const audioDataUrl = await Promise.race([
-          generateVoice(aiResponse, voiceId),
-          new Promise<string>((resolve) => setTimeout(() => resolve(''), 5000)) // 5s timeout
-        ]);
+        const voice = user.aiModulation as "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
+        console.log("Generating Cartesia audio for voice:", voice);
+        console.log("AI Response text:", aiResponse.substring(0, 100) + "...");
         
-        audioBase64 = audioDataUrl ? audioDataUrl.split(',')[1] : '';
+        // Remove timeout race condition - let Cartesia handle its own timeouts
+        audioDataUrl = await generateCartesiaAudio(aiResponse, voice);
+        
+        console.log("Cartesia audio generated successfully:", !!audioDataUrl);
+        if (audioDataUrl) {
+          console.log("Audio data URL length:", audioDataUrl.length);
+          console.log("Audio data URL preview:", audioDataUrl.substring(0, 100) + "...");
+        }
       } catch (error) {
-        console.error("Voice generation failed, will use browser speech:", error);
-        audioBase64 = '';
+        console.error("Cartesia voice generation failed:", error);
+        console.error("Error details:", error instanceof Error ? error.message : error);
+        audioDataUrl = '';
       }
+    } else {
+      console.log("CARTESIA_API_KEY not found, will use browser speech synthesis");
     }
 
     // Save AI message
@@ -95,7 +101,7 @@ export async function POST(request: NextRequest) {
       userId: new ObjectId(userId),
       role: "assistant",
       content: aiResponse,
-      audioBase64,
+      audioUrl: audioDataUrl,
       lipsync,
       animation,
       facialExpression,
@@ -117,7 +123,7 @@ export async function POST(request: NextRequest) {
         id: aiMessage?._id.toString(),
         role: aiMessage?.role,
         content: aiMessage?.content,
-        audioBase64: aiMessage?.audioBase64,
+        audio: audioDataUrl, // Use the generated audio data URL directly
         lipsync: aiMessage?.lipsync,
         animation: aiMessage?.animation,
         facialExpression: aiMessage?.facialExpression,

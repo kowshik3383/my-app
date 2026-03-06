@@ -1,10 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type AIRole = "mother" | "father" | "brother" | "sister" | "grandparent" | "doctor" | "coach" | "friend";
+export type AIRole =
+  | "mother" | "father" | "brother" | "sister" | "grandparent"
+  | "doctor" | "therapist" | "nurse"
+  | "coach" | "mentor" | "teacher"
+  | "friend" | "best_friend" | "girlfriend" | "partner"
+  | "leader" | "boss" | "teammate"
+  | "spiritual_guide" | "motivator" | "caregiver";
+
 export type AIModulation = "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
 export type Language = "en" | "hi" | "ta" | "te" | "bn";
 export type DiseaseFocus = "diabetes" | "heart" | "weight_loss" | "pcos" | "mental_health" | "custom";
+export type InteractionMode = "chat" | "voice_call";
 
 interface Message {
   id: string;
@@ -26,7 +34,7 @@ interface UserProfile {
 interface Store {
   // User profile
   userProfile: UserProfile | null;
-  setUserProfile: (profile: UserProfile) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
   isOnboarded: boolean;
   setIsOnboarded: (value: boolean) => void;
 
@@ -36,7 +44,7 @@ interface Store {
   messages: Message[];
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
-  
+
   // UI state
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
@@ -44,6 +52,12 @@ interface Store {
   setIsRecording: (value: boolean) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (value: boolean) => void;
+
+  // New: Interaction & appearance
+  interactionMode: InteractionMode;
+  setInteractionMode: (mode: InteractionMode) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 export const useStore = create<Store>()(
@@ -69,6 +83,12 @@ export const useStore = create<Store>()(
       setIsRecording: (value) => set({ isRecording: value }),
       isSidebarOpen: false,
       setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
+
+      // Interaction & appearance
+      interactionMode: "chat",
+      setInteractionMode: (mode) => set({ interactionMode: mode }),
+      isDarkMode: false,
+      toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
     }),
     {
       name: "health-companion-storage",
@@ -76,6 +96,8 @@ export const useStore = create<Store>()(
         userProfile: state.userProfile,
         isOnboarded: state.isOnboarded,
         currentSessionId: state.currentSessionId,
+        isDarkMode: state.isDarkMode,
+        interactionMode: state.interactionMode,
       }),
     }
   )
