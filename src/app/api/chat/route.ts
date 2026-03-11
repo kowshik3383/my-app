@@ -3,6 +3,7 @@ import { getDb, ObjectId } from "@/lib/mongodb";
 import { generateAIResponse } from "@/lib/gemini";
 import { generateCartesiaAudio } from "@/lib/cartesia";
 import { generateLipsync, selectAnimation, selectFacialExpression, estimateAudioDuration, stripEmotionTags } from "@/lib/lipsync";
+import { isLanguageSupportedByCartesia } from "@/lib/cartesia";
 import type { AIModulation } from "@/store/useStore";
 
 export async function POST(request: NextRequest) {
@@ -75,11 +76,18 @@ export async function POST(request: NextRequest) {
     if (CARTESIA_API_KEY) {
       try {
         const voice = user.aiModulation as "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
-        console.log("Generating Cartesia audio for voice:", voice);
-        console.log("AI Response text:", aiResponse.substring(0, 100) + "...");
-        
-        // Remove timeout race condition - let Cartesia handle its own timeouts
-        audioDataUrl = await generateCartesiaAudio(aiResponse, voice);
+        const language = (user.language as string) || "en";
+        console.log("Generating Cartesia audio for voice:", voice, "language:", language);
+
+        // Strip emotion tags (e.g. [happy]) before sending to Cartesia
+        const cleanedText = stripEmotionTags(aiResponse);
+        console.log("Cleaned text for Cartesia:", cleanedText.substring(0, 100) + "...");
+
+        if (!isLanguageSupportedByCartesia(language)) {
+          console.log(`Language "${language}" not supported by Cartesia, browser TTS will be used`);
+        } else {
+          audioDataUrl = await generateCartesiaAudio(cleanedText, voice, language);
+        }
         
         console.log("Cartesia audio generated successfully:", !!audioDataUrl);
         if (audioDataUrl) {

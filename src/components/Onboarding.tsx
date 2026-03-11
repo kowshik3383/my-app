@@ -409,17 +409,17 @@ export default function Onboarding() {
           {/* Step indicators */}
           <div className="ob-steps">
             {steps.map((s, i) => (
-              <>
-                <div className="ob-step-item" key={s.number}>
+              <div key={s.number} style={{ display: "contents" }}>
+                <div className="ob-step-item">
                   <div className={`ob-step-dot ${step === s.number ? "active" : step > s.number ? "done" : ""}`}>
                     {step > s.number ? <Check size={12} strokeWidth={2.5} /> : s.number}
                   </div>
                   <span className={`ob-step-label ${step === s.number ? "active" : ""}`}>{s.label}</span>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className={`ob-step-line ${step > s.number ? "done" : ""}`} key={`line-${i}`} />
+                  <div className={`ob-step-line ${step > s.number ? "done" : ""}`} />
                 )}
-              </>
+              </div>
             ))}
           </div>
 

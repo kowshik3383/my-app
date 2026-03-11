@@ -240,6 +240,19 @@ export function Avatar(props: AvatarProps) {
   ) as unknown as GLTFResult & { scene: Group };
 
   const { message, onMessagePlayed, chat } = useChat();
+
+  // Get the user's BCP-47 language tag for browser TTS
+  const getBrowserLang = (): string => {
+    try {
+      const stored = localStorage.getItem("health-companion-storage");
+      const lang: string = stored ? JSON.parse(stored).state?.userProfile?.language || "en" : "en";
+      const map: Record<string, string> = { en: "en-US", hi: "hi-IN", te: "te-IN", ta: "ta-IN", bn: "bn-IN" };
+      return map[lang] ?? "en-US";
+    } catch {
+      return "en-US";
+    }
+  };
+
   const [lipsync, setLipsync] = useState<any>();
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [blink, setBlink] = useState(false);
@@ -255,7 +268,9 @@ export function Avatar(props: AvatarProps) {
   const { animations } = useGLTF("/models/animations.glb");
   const group = useRef<Group>(null);
   const { actions, mixer } = useAnimations(animations, group);
-
+  const animationAudioMap: Record<string, string> = {
+    Rumba: "/music/rumba.mp3",
+  };
   useEffect(() => {
     const initialAnimation = animations.find((a) => a.name === "Idle")
       ? "Idle"
@@ -280,7 +295,26 @@ export function Avatar(props: AvatarProps) {
       audioRef.current = null;
     };
   }, []);
+  useEffect(() => {
+    if (!animation) return;
 
+    const audioSrc = animationAudioMap[animation];
+
+    if (!audioSrc) return;
+
+    const animAudio = new Audio(audioSrc);
+    animAudio.loop = true; // dance loops usually
+    animAudio.volume = 0.8;
+
+    animAudio.play().catch((err) => {
+      console.warn("Animation audio failed:", err);
+    });
+
+    return () => {
+      animAudio.pause();
+      animAudio.currentTime = 0;
+    };
+  }, [animation]);
   useEffect(() => {
     if (!message) {
       setAnimation("Idle");
@@ -318,6 +352,7 @@ export function Avatar(props: AvatarProps) {
         if (message.text && window.speechSynthesis) {
           console.log("Falling back to browser speech synthesis");
           const utterance = new SpeechSynthesisUtterance(message.text);
+          utterance.lang = getBrowserLang();
           utterance.rate = 1.0;
           utterance.pitch = 1.0;
           utterance.volume = 1.0;
@@ -388,6 +423,7 @@ export function Avatar(props: AvatarProps) {
             if (message.text && window.speechSynthesis) {
               console.log("Falling back to browser speech synthesis");
               const utterance = new SpeechSynthesisUtterance(message.text);
+              utterance.lang = getBrowserLang();
               utterance.rate = 1.0;
               utterance.pitch = 1.0;
               utterance.volume = 1.0;
@@ -402,6 +438,7 @@ export function Avatar(props: AvatarProps) {
         console.log("Audio playback not supported, using fallback");
         if (message.text && window.speechSynthesis) {
           const utterance = new SpeechSynthesisUtterance(message.text);
+          utterance.lang = getBrowserLang();
           utterance.rate = 1.0;
           utterance.pitch = 1.0;
           utterance.volume = 1.0;
@@ -420,6 +457,7 @@ export function Avatar(props: AvatarProps) {
       // Still use lipsync data even without audio
       setAudioStartTime(performance.now() / 1000); // Convert to seconds
       const utterance = new SpeechSynthesisUtterance(message.text);
+      utterance.lang = getBrowserLang();
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;

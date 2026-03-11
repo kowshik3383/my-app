@@ -3,37 +3,70 @@
 import { useState } from "react";
 import { useStore } from "@/store/useStore";
 import {
-  Settings, MessageCircle, LogOut, Moon, Sun, Phone,
+  Settings,
+  MessageCircle,
+  LogOut,
+  Moon,
+  Sun,
+  Phone,
 } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
 
 const ROLE_LABELS: Record<string, string> = {
-  mother: "Mother", father: "Father", brother: "Brother", sister: "Sister",
-  grandparent: "Grandparent", doctor: "Doctor", therapist: "Therapist",
-  nurse: "Nurse", coach: "Coach", mentor: "Mentor", teacher: "Teacher",
-  friend: "Friend", best_friend: "Best Friend", girlfriend: "Girlfriend",
-  partner: "Partner", leader: "Leader", boss: "Boss", teammate: "Teammate",
-  spiritual_guide: "Spiritual Guide", motivator: "Motivator", caregiver: "Caregiver",
+  mother: "Mother",
+  father: "Father",
+  brother: "Brother",
+  sister: "Sister",
+  grandparent: "Grandparent",
+  doctor: "Doctor",
+  therapist: "Therapist",
+  nurse: "Nurse",
+  coach: "Coach",
+  mentor: "Mentor",
+  teacher: "Teacher",
+  friend: "Friend",
+  best_friend: "Best Friend",
+  girlfriend: "Girlfriend",
+  partner: "Partner",
+  leader: "Leader",
+  boss: "Boss",
+  teammate: "Teammate",
+  spiritual_guide: "Spiritual Guide",
+  motivator: "Motivator",
+  caregiver: "Caregiver",
 };
 
 const FOCUS_LABELS: Record<string, string> = {
-  diabetes: "Diabetes", heart: "Heart Health", weight_loss: "Weight Loss",
-  pcos: "PCOS", mental_health: "Mental Health", custom: "Custom",
+  diabetes: "Diabetes",
+  heart: "Heart Health",
+  weight_loss: "Weight Loss",
+  pcos: "PCOS",
+  mental_health: "Mental Health",
+  custom: "Custom",
 };
 
 export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const {
     userProfile,
-    setIsOnboarded, setUserProfile, setMessages, setCurrentSessionId,
-    isDarkMode, toggleDarkMode,
-    interactionMode, setInteractionMode,
+    setIsOnboarded,
+    setUserProfile,
+    setMessages,
+    setCurrentSessionId,
+    isDarkMode,
+    toggleDarkMode,
+    interactionMode,
+    setInteractionMode,
   } = useStore();
 
   const dark = isDarkMode;
 
   const handleLogout = () => {
-    if (confirm("Are you sure you want to logout? This will clear your current session.")) {
+    if (
+      confirm(
+        "Are you sure you want to logout? This will clear your current session.",
+      )
+    ) {
       setIsOnboarded(false);
       setUserProfile(null);
       setMessages([]);
@@ -41,118 +74,96 @@ export default function Header() {
     }
   };
 
-  const roleLabel = ROLE_LABELS[userProfile?.aiRole || ""] || (userProfile?.aiRole ?? "AI");
-  const focusLabel = FOCUS_LABELS[userProfile?.diseaseFocus || ""] || userProfile?.diseaseFocus || "";
+  const roleLabel =
+    ROLE_LABELS[userProfile?.aiRole || ""] || (userProfile?.aiRole ?? "AI");
+  const focusLabel =
+    FOCUS_LABELS[userProfile?.diseaseFocus || ""] ||
+    userProfile?.diseaseFocus ||
+    "";
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap');
-
-        .hdr-root {
-          font-family: 'DM Sans', sans-serif;
-          background: ${dark ? "#111114" : "#ffffff"};
-          border-bottom: 1px solid ${dark ? "#262628" : "#eeebe7"};
-          padding: 0 18px;
-          height: 56px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          transition: background 0.25s ease, border-color 0.25s ease;
-        }
-
-        .hdr-left {
-          display: flex; align-items: center; gap: 10px; min-width: 0;
-        }
-
-        .hdr-icon {
-          width: 32px; height: 32px; border-radius: 9px;
-          background: ${dark ? "#f0f0f0" : "#1a1a1a"};
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .hdr-text { min-width: 0; }
-
-        .hdr-title {
-          font-family: 'DM Serif Display', serif;
-          font-size: 15px; color: ${dark ? "#f0f0f0" : "#1a1a1a"};
-          font-weight: 400; line-height: 1.2;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-
-        .hdr-meta { display: flex; align-items: center; gap: 5px; margin-top: 1px; }
-
-        .hdr-status-dot {
-          width: 6px; height: 6px; border-radius: 50%; background: #22c55e;
-          animation: statusPulse 2.5s ease-in-out infinite; flex-shrink: 0;
-        }
+        .font-dm-serif { font-family: 'DM Serif Display', serif; }
+        .font-dm-sans { font-family: 'DM Sans', sans-serif; }
         @keyframes statusPulse {
-          0%,100% { opacity:1; } 50% { opacity:0.5; }
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
-
-        .hdr-tag {
-          font-size: 11px; color: ${dark ? "#666" : "#a09c96"};
-          font-weight: 400; letter-spacing: 0.01em; white-space: nowrap;
-        }
-        .hdr-role-pill {
-          display: inline-block; padding: 1px 8px;
-          background: ${dark ? "#1e1e22" : "#f5f3f0"};
-          border-radius: 100px; font-size: 11px;
-          color: ${dark ? "#bbb" : "#666"};
-          font-weight: 500; letter-spacing: 0.01em;
-        }
-        .hdr-dot {
-          width: 3px; height: 3px; border-radius: 50%;
-          background: ${dark ? "#333" : "#d0ccc7"}; flex-shrink: 0;
-        }
-
-        .hdr-right { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-
-        .hdr-btn {
-          width: 34px; height: 34px; border-radius: 8px; border: none;
-          background: transparent; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          color: ${dark ? "#555" : "#a09c96"}; transition: all 0.15s ease;
-        }
-        .hdr-btn:hover {
-          background: ${dark ? "#1e1e22" : "#f5f3f0"};
-          color: ${dark ? "#f0f0f0" : "#1a1a1a"};
-        }
-        .hdr-btn:active { transform: scale(0.93); }
-        .hdr-btn-active {
-          background: ${dark ? "#1e1e22" : "#1a1a1a"} !important;
-          color: ${dark ? "#f0f0f0" : "#fff"} !important;
-        }
-
-        .hdr-divider {
-          width: 1px; height: 16px;
-          background: ${dark ? "#262628" : "#eeebe7"}; margin: 0 3px;
-        }
+        .animate-status-pulse { animation: statusPulse 2.5s ease-in-out infinite; }
       `}</style>
 
-      <header className="hdr-root">
-        <div className="hdr-left">
-          <div className="hdr-icon">
+      <header
+        className={`
+          font-dm-sans bg-transparent border-none
+          px-[18px] h-14 flex items-center justify-between
+          sticky top-0 z-50 transition-[background,border-color] duration-[250ms] ease-in-out
+        `}
+      >
+        {/* Left */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          {/* Icon */}
+          <div
+            className={`
+              w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0
+              ${dark ? "bg-[#f0f0f0]" : "bg-[#1a1a1a]"}
+            `}
+          >
             <MessageCircle
               size={15}
               color={dark ? "#1a1a1a" : "#ffffff"}
               strokeWidth={1.8}
             />
           </div>
-          <div className="hdr-text">
-            <h1 className="hdr-title">AI Companion</h1>
+
+          {/* Text */}
+          <div className="min-w-0">
+            <h1
+              className={`
+                font-dm-serif text-[15px] font-normal leading-tight
+                whitespace-nowrap overflow-hidden text-ellipsis
+                ${dark ? "text-[#f0f0f0]" : "text-[#1a1a1a]"}
+              `}
+            >
+              AI Companion
+            </h1>
+
             {userProfile && (
-              <div className="hdr-meta">
-                <span className="hdr-status-dot" />
-                <span className="hdr-role-pill">{roleLabel}</span>
+              <div className="flex items-center gap-[5px] mt-[1px]">
+                {/* Status dot */}
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0 animate-status-pulse"
+                />
+
+                {/* Role pill */}
+                <span
+                  className={`
+                    inline-block px-2 py-[1px] rounded-full text-[11px] font-medium tracking-[0.01em]
+                    ${dark ? "bg-[#1e1e22] text-[#bbb]" : "bg-[#f5f3f0] text-[#666]"}
+                  `}
+                >
+                  {roleLabel}
+                </span>
+
                 {focusLabel && (
                   <>
-                    <span className="hdr-dot" />
-                    <span className="hdr-tag">{focusLabel}</span>
+                    {/* Separator dot */}
+                    <span
+                      className={`
+                        w-[3px] h-[3px] rounded-full flex-shrink-0
+                        ${dark ? "bg-[#333]" : "bg-[#d0ccc7]"}
+                      `}
+                    />
+                    {/* Focus tag */}
+                    <span
+                      className={`
+                        text-[11px] font-normal tracking-[0.01em] whitespace-nowrap
+                        ${dark ? "text-[#666]" : "text-[#a09c96]"}
+                      `}
+                    >
+                      {focusLabel}
+                    </span>
                   </>
                 )}
               </div>
@@ -160,36 +171,103 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hdr-right">
+        {/* Right */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {/* Dark mode toggle */}
           <button
             onClick={toggleDarkMode}
-            className="hdr-btn"
             aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
             title={dark ? "Light mode" : "Dark mode"}
+            className={`
+              w-[34px] h-[34px] rounded-lg border-none bg-transparent cursor-pointer
+              flex items-center justify-center transition-all duration-150 ease-in-out
+              active:scale-95
+              ${dark
+                ? "text-[#555] hover:bg-[#1e1e22] hover:text-[#f0f0f0]"
+                : "text-[#a09c96] hover:bg-[#f5f3f0] hover:text-[#1a1a1a]"
+              }
+            `}
           >
-            {dark
-              ? <Sun size={16} strokeWidth={1.8} />
-              : <Moon size={16} strokeWidth={1.8} />
-            }
+            {dark ? (
+              <Sun size={16} strokeWidth={1.8} />
+            ) : (
+              <Moon size={16} strokeWidth={1.8} />
+            )}
           </button>
 
           {/* Voice call mode toggle */}
           <button
-            onClick={() => setInteractionMode(interactionMode === "chat" ? "voice_call" : "chat")}
-            className={`hdr-btn ${interactionMode === "voice_call" ? "hdr-btn-active" : ""}`}
-            aria-label={interactionMode === "voice_call" ? "Switch to chat" : "Switch to voice call"}
-            title={interactionMode === "voice_call" ? "Back to chat" : "Voice call mode"}
+            onClick={() =>
+              setInteractionMode(
+                interactionMode === "chat" ? "voice_call" : "chat",
+              )
+            }
+            aria-label={
+              interactionMode === "voice_call"
+                ? "Switch to chat"
+                : "Switch to voice call"
+            }
+            title={
+              interactionMode === "voice_call"
+                ? "Back to chat"
+                : "Voice call mode"
+            }
+            className={`
+              w-[34px] h-[34px] rounded-lg border-none cursor-pointer
+              flex items-center justify-center transition-all duration-150 ease-in-out
+              active:scale-95
+              ${interactionMode === "voice_call"
+                ? dark
+                  ? "bg-[#1e1e22] text-[#f0f0f0]"
+                  : "bg-[#1a1a1a] text-white"
+                : dark
+                  ? "bg-transparent text-[#555] hover:bg-[#1e1e22] hover:text-[#f0f0f0]"
+                  : "bg-transparent text-[#a09c96] hover:bg-[#f5f3f0] hover:text-[#1a1a1a]"
+              }
+            `}
           >
             <Phone size={16} strokeWidth={1.8} />
           </button>
 
-          <div className="hdr-divider" />
+          {/* Divider */}
+          <div
+            className={`
+              w-px h-4 mx-[3px]
+              ${dark ? "bg-[#262628]" : "bg-[#eeebe7]"}
+            `}
+          />
 
-          <button onClick={() => setShowSettings(true)} className="hdr-btn" aria-label="Settings">
+          {/* Settings */}
+          <button
+            onClick={() => setShowSettings(true)}
+            aria-label="Settings"
+            className={`
+              w-[34px] h-[34px] rounded-lg border-none bg-transparent cursor-pointer
+              flex items-center justify-center transition-all duration-150 ease-in-out
+              active:scale-95
+              ${dark
+                ? "text-[#555] hover:bg-[#1e1e22] hover:text-[#f0f0f0]"
+                : "text-[#a09c96] hover:bg-[#f5f3f0] hover:text-[#1a1a1a]"
+              }
+            `}
+          >
             <Settings size={16} strokeWidth={1.8} />
           </button>
-          <button onClick={handleLogout} className="hdr-btn" aria-label="Logout">
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            aria-label="Logout"
+            className={`
+              w-[34px] h-[34px] rounded-lg border-none bg-transparent cursor-pointer
+              flex items-center justify-center transition-all duration-150 ease-in-out
+              active:scale-95
+              ${dark
+                ? "text-[#555] hover:bg-[#1e1e22] hover:text-[#f0f0f0]"
+                : "text-[#a09c96] hover:bg-[#f5f3f0] hover:text-[#1a1a1a]"
+              }
+            `}
+          >
             <LogOut size={16} strokeWidth={1.8} />
           </button>
         </div>

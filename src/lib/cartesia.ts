@@ -1,5 +1,13 @@
 type Voice = "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
 
+// Languages supported by Cartesia sonic-2
+// Telugu (te), Tamil (ta), Bengali (bn) are NOT supported — callers should skip Cartesia for these
+const CARTESIA_SUPPORTED_LANGUAGES = new Set(["en", "hi", "de", "es", "fr", "pt", "zh", "ja", "it", "ko", "nl", "pl", "ru", "sv", "tr", "ar"]);
+
+export function isLanguageSupportedByCartesia(lang: string): boolean {
+  return CARTESIA_SUPPORTED_LANGUAGES.has(lang);
+}
+
 interface CartesiaVoice {
   id: string;
   name: string;
@@ -30,8 +38,15 @@ const VOICE_MAPPING: Record<Voice, CartesiaVoice> = {
 
 export async function generateCartesiaAudio(
   text: string,
-  voice: Voice
+  voice: Voice,
+  language: string = "en"
 ): Promise<string> {
+  // Skip Cartesia for unsupported languages — let browser TTS handle it
+  if (!isLanguageSupportedByCartesia(language)) {
+    console.log(`Cartesia does not support language "${language}", skipping (will use browser TTS)`);
+    return "";
+  }
+
   const apiKey = process.env.CARTESIA_API_KEY || process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
   if (!apiKey) {
     throw new Error("CARTESIA_API_KEY is not set");
@@ -56,6 +71,7 @@ export async function generateCartesiaAudio(
         mode: "id",
         id: voiceConfig.id,
       },
+      language,
       output_format: {
         container: "mp3",
         encoding: "mp3",
