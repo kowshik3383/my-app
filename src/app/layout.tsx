@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Health Companion - Your Personal Wellness Assistant",
+  title: "AI Health Companion V2 — Your Personal Health Operating System",
   description:
-    "AI-powered health companion with voice conversation, multilingual support, and personalized guidance for your wellness journey",
+    "Track your health, emotions, goals, sleep, habits, and progress with an AI companion that actually remembers you. Persistent memory, emotional intelligence, voice conversations, and proactive coaching.",
 };
 
 export default function RootLayout({

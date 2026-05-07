@@ -1,64 +1,35 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
-import Onboarding from "@/components/Onboarding";
-import AvatarChat from "@/components/AvatarChat";
-import Sidebar from "@/components/layout/Sidebar";
-import { Toaster } from "react-hot-toast";
-import DashboardPage from "./dashboard/page";
-import GoalsPage from "./goals/page";
-import MemoryExplorer from "@/components/memory/MemoryExplorer";
+import Navbar from "@/components/landing/Navbar";
+import HeroSection from "@/components/landing/HeroSection";
+import ComparisonSection from "@/components/landing/ComparisonSection";
+import MemorySection from "@/components/landing/MemorySection";
+import DashboardSection from "@/components/landing/DashboardSection";
+import GoalTrackingSection from "@/components/landing/GoalTrackingSection";
+import VoiceSection from "@/components/landing/VoiceSection";
+import ArchitectureSection from "@/components/landing/ArchitectureSection";
+import FeaturesGrid from "@/components/landing/FeaturesGrid";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import SecuritySection from "@/components/landing/SecuritySection";
+import FinalCTA from "@/components/landing/FinalCTA";
+import Footer from "@/components/landing/Footer";
 
-export default function Home() {
-  const { isOnboarded, isDarkMode, currentView } = useStore();
-
-  if (!isOnboarded) {
-    return (
-      <>
-        <Onboarding />
-        <Toaster position="top-center" />
-      </>
-    );
-  }
-
+export default function LandingPage() {
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        background: "var(--bg)",
-        color: "var(--text)",
-      }}
-    >
-      <Sidebar />
-      <main
-        style={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-          background: "var(--bg)",
-          overflow: "hidden",
-        }}
-      >
-        {currentView === "chat" && <AvatarChat />}
-        {currentView === "dashboard" && <DashboardPage />}
-        {currentView === "goals" && <GoalsPage />}
-        {currentView === "memory" && <MemoryExplorer />}
-      </main>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: "var(--card-bg)",
-            color: "var(--text)",
-            border: "1px solid var(--border)",
-            fontFamily: "var(--font-sans)",
-            fontSize: 14,
-            borderRadius: "var(--radius-sm)",
-          },
-        }}
-      />
+    <div className="font-sans antialiased">
+      <Navbar />
+      <HeroSection />
+      <ComparisonSection />
+      <MemorySection />
+      <DashboardSection />
+      <GoalTrackingSection />
+      <VoiceSection />
+      <ArchitectureSection />
+      <FeaturesGrid />
+      <TestimonialsSection />
+      <SecuritySection />
+      <FinalCTA />
+      <Footer />
     </div>
   );
 }
