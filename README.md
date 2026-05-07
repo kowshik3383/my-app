@@ -1,220 +1,146 @@
-# 🏥 AI Health Companion
+# AI Health Companion V2
 
-A full-stack Next.js AI health companion with voice conversation, multilingual support, and personalized wellness guidance.
+A persistent, proactive, production-grade AI health platform built with Next.js. Features long-term memory, health analytics dashboard, goal tracking, and a provider-agnostic AI orchestration layer powered by OpenRouter.
 
-## ✨ Features
+## Features
 
-- 🎤 **Voice Conversation**: Speech-to-text input using Web Speech API
-- 💬 **Text Chat**: Real-time messaging with AI
-- 🗣️ **AI Voice Responses**: Text-to-speech using ElevenLabs
-- 🌍 **Multilingual**: Support for English, Hindi, Tamil, Telugu, Bengali
-- 👨‍👩‍👧 **Personality Modes**: Choose from Mother, Father, Doctor, Coach, etc.
-- ⚙️ **Customizable AI Behavior**: Adjust communication style and health focus
-- 🗄️ **MongoDB Backend**: Persistent storage with native MongoDB driver
-- 🧠 **Powered by Gemini AI**: Advanced conversational intelligence
+- **Persistent Memory Engine** — Episodic, behavioral, emotional, and health-fact memory with semantic retrieval
+- **Health Dashboard** — Weight, glucose, sleep, mood, medication tracking with AI-powered insights
+- **Goal Tracking** — Set health goals, track streaks, get AI coaching with adaptive personalities
+- **3D Avatar** — Realistic avatar with facial expressions, lipsync, and animations
+- **Multilingual** — English, Hindi, Tamil, Telugu, Bengali
+- **Streaming AI Responses** — Real-time token-by-token streaming via SSE
+- **Provider-Agnostic AI** — OpenRouter with model routing (fast chat, reasoning, memory, embeddings)
 
-## 🚀 Getting Started
+## Tech Stack
 
-### Prerequisites
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router), React 19 |
+| Styling | Tailwind CSS v4 |
+| State | Zustand with persist middleware |
+| AI | OpenRouter (provider-agnostic: GPT-4o-mini, Claude Sonnet, Mistral) |
+| Database | MongoDB (native driver) with vector search |
+| Charts | Recharts |
+| 3D | React Three Fiber, Three.js |
+| Voice | ElevenLabs TTS, Web Speech API |
 
-- Node.js 18+ or Bun
-- MongoDB (local or cloud instance)
-- Gemini API key (from Google AI Studio)
-- ElevenLabs API key (optional, for voice responses)
+## Quick Start
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd my-app
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env.local` file in the root directory:
-   ```env
-   # Database
-   DATABASE_URL="mongodb://localhost:27017/health-companion"
-   # Or for MongoDB Atlas:
-   # DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/health-companion"
-
-   # AI Services
-   GEMINI_API_KEY="your-gemini-api-key-here"
-   ELEVENLABS_API_KEY="your-elevenlabs-api-key-here"
-
-   # App Configuration
-   NEXT_PUBLIC_APP_URL="http://localhost:3000"
-   ```
-
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
-   
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📦 Tech Stack
-
-### Frontend
-- **Next.js 16** (App Router)
-- **React 19**
-- **TypeScript**
-- **Tailwind CSS v4**
-- **Zustand** (State Management)
-- **Lucide React** (Icons)
-- **React Hot Toast** (Notifications)
-
-### Backend
-- **Next.js API Routes**
-- **MongoDB Native Driver**
-- **MongoDB** (Database)
-
-### AI & Voice
-- **Google Generative AI (Gemini)** - AI Brain
-- **ElevenLabs** - Text-to-Speech
-- **Web Speech API** - Speech-to-Text
-
-## 🏗️ Project Structure
-
-```
-my-app/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── chat/           # Chat endpoint
-│   │   │   ├── profile/        # User profile management
-│   │   │   ├── session/        # Session management
-│   │   │   └── voice/          # Voice generation
-│   │   ├── globals.css         # Global styles
-│   │   ├── layout.tsx          # Root layout
-│   │   └── page.tsx            # Main page
-│   ├── components/
-│   │   ├── Chat.tsx            # Main chat interface
-│   │   ├── ChatInput.tsx       # Text/voice input
-│   │   ├── ChatMessage.tsx     # Message component
-│   │   ├── Header.tsx          # App header
-│   │   ├── Onboarding.tsx      # Onboarding flow
-│   │   └── SettingsPanel.tsx   # Settings modal
-│   ├── hooks/
-│   │   └── useVoiceRecording.ts # Voice recording hook
-│   ├── lib/
-│   │   ├── mongodb.ts          # MongoDB client
-│   │   ├── gemini.ts           # Gemini AI integration
-│   │   └── elevenlabs.ts       # ElevenLabs integration
-│   ├── store/
-│   │   └── useStore.ts         # Zustand store
-│   └── types/
-│       └── models.ts           # TypeScript data models
-└── public/                     # Static assets
+```bash
+npm install
+cp .env.example .env.local   # configure keys
+npm run dev                   # http://localhost:3000
 ```
 
-## 🎯 Features Breakdown
+## Environment Variables
 
-### Onboarding Flow
-Users select:
-1. **AI Role**: Mother, Father, Doctor, Coach, etc.
-2. **Communication Style**: Soft & Caring, Strict, Professional, etc.
-3. **Language**: English, Hindi, Tamil, Telugu, Bengali
-4. **Health Focus**: Diabetes, Heart Health, Weight Loss, PCOS, etc.
+```env
+# Required
+OPENROUTER_API_KEY=
+DATABASE_URL=
 
-### Chat Interface
-- Real-time text messaging
-- Voice input with Web Speech API
-- AI voice responses (optional)
-- Message history
-- Auto-scroll to latest message
+# OpenRouter (optional overrides)
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MODEL_FAST=openai/gpt-4o-mini
+OPENROUTER_MODEL_REASONING=anthropic/claude-sonnet-4
+OPENROUTER_MODEL_MEMORY=mistralai/mistral-small
 
-### Settings
-- Update AI personality anytime
-- Change language preference
-- Modify health focus area
-- Customize AI behavior
+# Optional
+ELEVENLABS_API_KEY=
+```
 
-## 🔑 API Endpoints
+## Architecture
 
-### POST `/api/profile`
-Create user profile with AI preferences
+```
+Frontend (React/Next.js)
+    │
+    ▼
+Next.js API Layer
+    │
+    ▼
+AI Orchestration Layer (OpenRouter)
+    │
+    ├── Fast Chat → GPT-4o-mini / Mistral Small
+    ├── Reasoning → Claude Sonnet / GPT-4.1
+    ├── Memory     → Mistral Small
+    └── Embeddings → text-embedding-3-small
+```
 
-### PUT `/api/profile`
-Update user profile
+### Memory System
 
-### GET `/api/profile?userId={id}`
-Get user profile
+```
+Message Created
+    │
+    ├── Save Message (MongoDB)
+    ├── Extract Memories (async)
+    ├── Generate Embeddings
+    ├── Store in Vector DB
+    ├── Detect Emotional Signals
+    └── Summarize (every 20 messages)
+```
 
-### POST `/api/session`
-Create new chat session
+Memory retrieval injects relevant context into each AI prompt using semantic search, recency weighting, and token budgeting.
 
-### GET `/api/session?sessionId={id}`
-Get session with messages
+### API Endpoints
 
-### POST `/api/chat`
-Send message and get AI response
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/chat` | POST | Send message, get AI response (streaming or JSON) |
+| `/api/profile` | GET/POST/PUT | User profile CRUD |
+| `/api/session` | GET/POST | Session management |
+| `/api/memories` | GET/DELETE | Memory retrieval and management |
+| `/api/health/metrics` | GET/POST | Health metric tracking |
+| `/api/health/insights` | GET/POST/PATCH | AI-generated health insights |
+| `/api/goals` | GET/POST/PATCH/DELETE | Goal CRUD with progress tracking |
+| `/api/goals/evaluate` | POST | Evaluate all active goals |
+| `/api/dashboard` | GET/POST | Aggregated dashboard data |
+| `/api/voice` | POST | TTS voice generation |
 
-### POST `/api/voice`
-Generate voice from text
+## Project Structure
 
-## 🎨 Customization
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes (chat, health, goals, etc.)
+│   ├── dashboard/         # Health analytics dashboard
+│   └── page.tsx           # Main entry point
+├── components/
+│   ├── 3d/                # Avatar, Experience
+│   ├── dashboard/         # WeightChart, GlucoseChart, SleepChart, etc.
+│   ├── goals/             # GoalCard, GoalList, GoalForm
+│   └── memory/            # MemoryIndicator
+├── lib/
+│   ├── ai/                # OpenRouter client, model routing, prompts
+│   ├── db/                # MongoDB client, vector store
+│   ├── memory/            # Engine, extraction, retrieval, embeddings
+│   ├── goals/             # Goal engine, evaluation
+│   ├── health/            # Insights generation
+│   └── observability/     # Logging utilities
+├── store/                 # Zustand state
+└── types/                 # TypeScript types (memory, health, goals)
+```
 
-### Adding New Languages
-1. Update `Language` type in `src/store/useStore.ts`
-2. Add language option in `src/components/Onboarding.tsx`
-3. Update `languageNames` in `src/lib/gemini.ts`
+## Key Design Decisions
 
-### Adding New AI Roles
-1. Update `AIRole` type in `src/store/useStore.ts`
-2. Add role option in `src/components/Onboarding.tsx`
-3. Update `rolePrompts` in `src/lib/gemini.ts`
+- **OpenRouter over Gemini** — Provider-agnostic, model flexibility, fallback support, cost controls
+- **Async memory pipeline** — Memory extraction runs in background, doesn't block responses
+- **Token-aware retrieval** — Memory injection respects token budgets to prevent context overflow
+- **MongoDB for vectors** — Embeddings stored in MongoDB with fallback; swappable to Qdrant/Pinecone
+- **SSE streaming** — Real-time token streaming with `ReadableStream`
 
-### Customizing AI Voice
-Modify `VOICE_IDS` in `src/lib/elevenlabs.ts` to use different ElevenLabs voices.
+## Security
 
-## 📝 Database Schema
+- API keys are server-side only (never exposed to client)
+- MongoDB connection string stored in environment variables
+- Rate limiting via middleware (configurable)
+- Audit logging via observability layer
 
-- **User**: Stores user profile and AI preferences
-- **Session**: Chat sessions
-- **Message**: Individual messages with optional audio URLs
+## Deployment
 
-## 🛡️ Security Notes
-
-- API keys are stored server-side only
-- All AI interactions happen through Next.js API routes
-- No exposed backend URLs to the client
-- Environment variables required for deployment
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Push code to GitHub
-2. Import project in Vercel
-3. Add environment variables
+1. Push to GitHub
+2. Import in Vercel
+3. Set environment variables
 4. Deploy
 
-### MongoDB Atlas Setup
-1. Create cluster at [mongodb.com](https://www.mongodb.com/cloud/atlas)
-2. Get connection string
-3. Update `DATABASE_URL` in environment variables
-4. The MongoDB collections will be created automatically when the app runs
-
-## 📄 License
-
-MIT
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Support
-
-For issues and questions, please open an issue on GitHub.
-
----
-
-Built with ❤️ using Next.js, Gemini AI, and ElevenLabs
+MongoDB Atlas collections are auto-created on first use.

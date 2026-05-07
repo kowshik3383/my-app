@@ -5,9 +5,10 @@ import Onboarding from "@/components/Onboarding";
 import AvatarChat from "@/components/AvatarChat";
 import Header from "@/components/Header";
 import { Toaster } from "react-hot-toast";
+import DashboardPage from "./dashboard/page";
 
 export default function Home() {
-  const { isOnboarded } = useStore();
+  const { isOnboarded, showDashboard } = useStore();
 
   if (!isOnboarded) {
     return (
@@ -16,6 +17,10 @@ export default function Home() {
         <Toaster position="top-center" />
       </>
     );
+  }
+
+  if (showDashboard) {
+    return <DashboardPage />;
   }
 
   return (

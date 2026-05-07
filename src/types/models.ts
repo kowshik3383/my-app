@@ -9,6 +9,9 @@ export interface User {
   language: string;
   diseaseFocus: string;
   customTopic?: string;
+  coachingStyle?: string;
+  onboardingCompleted?: boolean;
+  lastActiveAt?: Date;
 }
 
 export interface Session {
@@ -16,6 +19,9 @@ export interface Session {
   createdAt: Date;
   updatedAt: Date;
   userId: ObjectId;
+  title?: string;
+  summary?: string;
+  messageCount?: number;
 }
 
 export interface Message {
@@ -26,4 +32,10 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   audioUrl?: string;
+  audioBase64?: string;
+  lipsync?: unknown;
+  animation?: string;
+  facialExpression?: string;
+  metadata?: Record<string, unknown>;
+  tokenCount?: number;
 }

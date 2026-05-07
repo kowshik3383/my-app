@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb, ObjectId } from "@/lib/mongodb";
+import { getDb, ObjectId } from "@/lib/db/mongodb";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { aiRole, aiModulation, language, diseaseFocus, customTopic } = body;
+    const { aiRole, aiModulation, language, diseaseFocus, customTopic, coachingStyle } = body;
 
-    // Validate required fields
     if (!aiRole || !aiModulation || !language || !diseaseFocus) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -23,6 +22,8 @@ export async function POST(request: NextRequest) {
       language,
       diseaseFocus,
       customTopic: diseaseFocus === "custom" ? customTopic : null,
+      coachingStyle: coachingStyle || "supportive_mentor",
+      onboardingCompleted: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, aiRole, aiModulation, language, diseaseFocus, customTopic } = body;
+    const { userId, aiRole, aiModulation, language, diseaseFocus, customTopic, coachingStyle } = body;
 
     if (!userId) {
       return NextResponse.json(
@@ -62,7 +63,7 @@ export async function PUT(request: NextRequest) {
     const db = await getDb();
     const usersCollection = db.collection("users");
 
-    const updateData = {
+    const updateData: Record<string, unknown> = {
       aiRole,
       aiModulation,
       language,
@@ -70,6 +71,7 @@ export async function PUT(request: NextRequest) {
       customTopic: diseaseFocus === "custom" ? customTopic : null,
       updatedAt: new Date(),
     };
+    if (coachingStyle) updateData.coachingStyle = coachingStyle;
 
     const result = await usersCollection.findOneAndUpdate(
       { _id: new ObjectId(userId) },

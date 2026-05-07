@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useStore } from "@/store/useStore";
-import { Settings, MessageCircle, LogOut } from "lucide-react";
+import { Settings, MessageCircle, LogOut, BarChart3 } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
+import MemoryIndicator from "./memory/MemoryIndicator";
 
 export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
@@ -13,6 +14,8 @@ export default function Header() {
     setUserProfile,
     setMessages,
     setCurrentSessionId,
+    setShowDashboard,
+    showDashboard,
   } = useStore();
 
   const handleLogout = () => {
@@ -185,6 +188,16 @@ export default function Header() {
         </div>
 
         <div className="hdr-right">
+          {userProfile?.id && <MemoryIndicator userId={userProfile.id} />}
+          <div className="hdr-divider" />
+          <button
+            onClick={() => setShowDashboard(!showDashboard)}
+            className={`hdr-btn ${showDashboard ? "!bg-gray-100 !text-gray-900" : ""}`}
+            aria-label="Dashboard"
+            title="Health Dashboard"
+          >
+            <BarChart3 size={17} strokeWidth={1.8} />
+          </button>
           <button
             onClick={() => setShowSettings(true)}
             className="hdr-btn"
