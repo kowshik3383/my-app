@@ -257,7 +257,8 @@ export async function POST(request: NextRequest) {
         id: aiMessage?._id.toString(),
         role: aiMessage?.role,
         content: aiMessage?.content,
-        audio: audioDataUrl, // Use the generated audio data URL directly
+        audio: audioBase64,
+        audioBase64,
         lipsync: aiMessage?.lipsync,
         animation: aiMessage?.animation,
         facialExpression: aiMessage?.facialExpression,

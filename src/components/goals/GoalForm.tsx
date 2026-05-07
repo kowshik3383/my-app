@@ -10,15 +10,15 @@ interface GoalFormProps {
   onCreated: () => void;
 }
 
-const GOAL_TYPES: { value: GoalType; label: string; unit: string }[] = [
-  { value: "weight_loss", label: "Weight Loss", unit: "kg" },
-  { value: "hbA1c_reduction", label: "HbA1c Reduction", unit: "%" },
-  { value: "sleep", label: "Sleep Goal", unit: "hours" },
-  { value: "water_intake", label: "Water Intake", unit: "L" },
-  { value: "walking", label: "Walking Goal", unit: "steps" },
-  { value: "medication", label: "Medication Adherence", unit: "%" },
-  { value: "exercise", label: "Exercise", unit: "min" },
-  { value: "custom", label: "Custom Goal", unit: "" },
+const GOAL_TYPES: { value: GoalType; label: string }[] = [
+  { value: "weight_loss", label: "Weight Loss" },
+  { value: "hbA1c_reduction", label: "HbA1c Reduction" },
+  { value: "sleep", label: "Sleep" },
+  { value: "water_intake", label: "Water Intake" },
+  { value: "walking", label: "Walking" },
+  { value: "medication", label: "Medication" },
+  { value: "exercise", label: "Exercise" },
+  { value: "custom", label: "Custom" },
 ];
 
 const COACHING_STYLES: { value: CoachingStyle; label: string }[] = [
@@ -29,21 +29,20 @@ const COACHING_STYLES: { value: CoachingStyle; label: string }[] = [
 ];
 
 export default function GoalForm({ userId, onClose, onCreated }: GoalFormProps) {
-  const [type, setType] = useState<GoalType>("weight_loss");
+  const [type, setType] = useState<GoalType>("custom");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [targetValue, setTargetValue] = useState("");
+  const [unit, setUnit] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [coachingStyle, setCoachingStyle] = useState<CoachingStyle>("supportive_mentor");
-  const [saving, setSaving] = useState(false);
-
-  const selectedType = GOAL_TYPES.find((t) => t.value === type);
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title || !targetValue) return;
+    if (!title.trim() || !targetValue) return;
 
-    setSaving(true);
+    setSubmitting(true);
     try {
       const res = await fetch("/api/goals", {
         method: "POST",
@@ -51,10 +50,11 @@ export default function GoalForm({ userId, onClose, onCreated }: GoalFormProps) 
         body: JSON.stringify({
           userId,
           type,
-          title,
-          description,
-          targetValue: Number(targetValue),
-          unit: selectedType?.unit || "",
+          title: title.trim(),
+          description: description.trim() || undefined,
+          targetValue: parseFloat(targetValue),
+          currentValue: 0,
+          unit: unit || undefined,
           targetDate: targetDate || undefined,
           coachingStyle,
         }),
@@ -62,31 +62,33 @@ export default function GoalForm({ userId, onClose, onCreated }: GoalFormProps) 
 
       if (res.ok) {
         onCreated();
+      } else {
+        console.error("Failed to create goal");
       }
     } catch (error) {
-      console.error("Failed to create goal:", error);
+      console.error("Error creating goal:", error);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Goal</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <X className="w-5 h-5 text-gray-500" />
+    <div className="gf-overlay" onClick={onClose}>
+      <div className="gf-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="gf-header">
+          <h3>New Goal</h3>
+          <button className="gf-close" onClick={onClose}>
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Type</label>
+        <form onSubmit={handleSubmit} className="gf-form">
+          <div className="gf-field">
+            <label className="gf-label">Goal Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as GoalType)}
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              className="gf-input"
             >
               {GOAL_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -94,86 +96,211 @@ export default function GoalForm({ userId, onClose, onCreated }: GoalFormProps) 
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+          <div className="gf-field">
+            <label className="gf-label">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Lose 5kg"
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              placeholder="e.g. Lose 5kg"
+              className="gf-input"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description (optional)</label>
+          <div className="gf-field">
+            <label className="gf-label">Description (optional)</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What does this goal involve?"
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              placeholder="What does this goal mean to you?"
+              className="gf-input gf-textarea"
               rows={2}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Target ({selectedType?.unit || "units"})
-              </label>
+          <div className="gf-row">
+            <div className="gf-field">
+              <label className="gf-label">Target Value</label>
               <input
                 type="number"
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
-                placeholder="e.g., 75"
-                className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                placeholder="e.g. 75"
+                className="gf-input"
                 required
-                step="any"
+                step="0.1"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Date</label>
+            <div className="gf-field">
+              <label className="gf-label">Unit (optional)</label>
               <input
-                type="date"
-                value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                type="text"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="e.g. kg"
+                className="gf-input"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coaching Style</label>
+          <div className="gf-field">
+            <label className="gf-label">Target Date (optional)</label>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="gf-input"
+            />
+          </div>
+
+          <div className="gf-field">
+            <label className="gf-label">Coaching Style</label>
             <select
               value={coachingStyle}
               onChange={(e) => setCoachingStyle(e.target.value as CoachingStyle)}
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              className="gf-input"
             >
-              {COACHING_STYLES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+              {COACHING_STYLES.map((cs) => (
+                <option key={cs.value} value={cs.value}>{cs.label}</option>
               ))}
             </select>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
+          <div className="gf-actions">
+            <button type="button" className="gf-cancel" onClick={onClose}>
               Cancel
             </button>
             <button
               type="submit"
-              disabled={saving}
-              className="flex-1 p-2.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-50 transition-colors"
+              className="gf-submit"
+              disabled={submitting || !title.trim() || !targetValue}
             >
-              {saving ? "Creating..." : "Create Goal"}
+              {submitting ? "Creating…" : "Create Goal"}
             </button>
           </div>
         </form>
       </div>
+
+      <style jsx>{`
+        .gf-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+        }
+        .gf-modal {
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          width: 440px;
+          max-width: 90vw;
+          max-height: 85vh;
+          overflow-y: auto;
+        }
+        .gf-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+        }
+        .gf-header h3 {
+          font-size: 15px;
+          font-weight: 600;
+          margin: 0;
+        }
+        .gf-close {
+          background: none;
+          border: none;
+          color: var(--text-tertiary);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+        }
+        .gf-close:hover { color: var(--text); }
+        .gf-form {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .gf-field {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .gf-label {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .gf-input {
+          padding: 8px 12px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          font-size: 13px;
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--font-sans);
+          outline: none;
+          transition: border-color var(--transition-fast);
+        }
+        .gf-input:focus {
+          border-color: var(--text);
+        }
+        .gf-input::placeholder {
+          color: var(--text-tertiary);
+        }
+        .gf-input.gf-textarea {
+          resize: vertical;
+          min-height: 60px;
+        }
+        select.gf-input {
+          cursor: pointer;
+        }
+        .gf-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .gf-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+          padding-top: 8px;
+        }
+        .gf-cancel {
+          padding: 8px 16px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-family: var(--font-sans);
+        }
+        .gf-submit {
+          padding: 8px 16px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 8px;
+          border: none;
+          background: var(--text);
+          color: var(--accent-text);
+          cursor: pointer;
+          transition: opacity var(--transition-fast);
+          font-family: var(--font-sans);
+        }
+        .gf-submit:hover { opacity: 0.85; }
+        .gf-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+      `}</style>
     </div>
   );
 }

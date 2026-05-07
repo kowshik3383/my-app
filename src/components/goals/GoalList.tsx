@@ -4,24 +4,26 @@ import { useState, useEffect } from "react";
 import GoalCard from "./GoalCard";
 import GoalForm from "./GoalForm";
 import { Plus, Loader2, Target } from "lucide-react";
+import { useStore } from "@/store/useStore";
 import type { Goal } from "@/types/goals";
 
-interface GoalListProps {
-  userId: string;
-}
+export default function GoalList() {
+  const { userProfile } = useStore();
+  const userId = userProfile?.id;
 
-export default function GoalList({ userId }: GoalListProps) {
   const [goals, setGoals] = useState<(Goal & { evaluation?: any })[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState<string>("active");
 
   useEffect(() => {
-    fetchGoals();
+    if (userId) fetchGoals();
   }, [userId, filter]);
 
   async function fetchGoals() {
+    if (!userId) return;
     try {
+      setLoading(true);
       const res = await fetch(`/api/goals?userId=${userId}&status=${filter}`);
       const data = await res.json();
       setGoals(data.goals || []);
@@ -60,27 +62,25 @@ export default function GoalList({ userId }: GoalListProps) {
     }
   }
 
+  if (!userId) return null;
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+      <div className="gl-loading">
+        <Loader2 size={18} strokeWidth={1.5} className="gl-spinner" />
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2">
+    <div className="gl-root">
+      <div className="gl-toolbar">
+        <div className="gl-filters">
           {["active", "completed", "all"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                filter === f
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-              }`}
+              className={`gl-filter-btn ${filter === f ? "active" : ""}`}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
@@ -88,14 +88,14 @@ export default function GoalList({ userId }: GoalListProps) {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+          className="gl-new-btn"
         >
-          <Plus className="w-4 h-4" />
+          <Plus size={13} strokeWidth={1.5} />
           New Goal
         </button>
       </div>
 
-      {showForm && (
+      {showForm && userId && (
         <GoalForm
           userId={userId}
           onClose={() => setShowForm(false)}
@@ -107,12 +107,12 @@ export default function GoalList({ userId }: GoalListProps) {
       )}
 
       {goals.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-500">
-          <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <div className="gl-empty">
+          <Target size={24} strokeWidth={1} />
           <p>No goals yet. Create your first health goal!</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="gl-grid">
           {goals.map((goal) => (
             <GoalCard
               key={goal._id?.toString()}
@@ -123,6 +123,86 @@ export default function GoalList({ userId }: GoalListProps) {
           ))}
         </div>
       )}
+
+      <style jsx>{`
+        .gl-loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 48px 0;
+          color: var(--text-tertiary);
+        }
+        .gl-spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .gl-root { }
+        .gl-toolbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+        .gl-filters {
+          display: flex;
+          gap: 4px;
+          background: var(--bg-secondary);
+          border-radius: 8px;
+          padding: 3px;
+        }
+        .gl-filter-btn {
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 6px;
+          border: none;
+          background: transparent;
+          color: var(--text-tertiary);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          font-family: var(--font-sans);
+        }
+        .gl-filter-btn:hover { color: var(--text-secondary); }
+        .gl-filter-btn.active {
+          background: var(--bg);
+          color: var(--text);
+          box-shadow: var(--shadow-sm);
+        }
+        .gl-new-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          color: var(--text);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          font-family: var(--font-sans);
+        }
+        .gl-new-btn:hover {
+          border-color: var(--text);
+        }
+        .gl-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 48px 24px;
+          color: var(--text-tertiary);
+          text-align: center;
+        }
+        .gl-empty p {
+          font-size: 13px;
+          margin: 0;
+        }
+        .gl-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+      `}</style>
     </div>
   );
 }

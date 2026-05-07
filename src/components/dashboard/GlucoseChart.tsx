@@ -1,44 +1,71 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 
-interface GlucoseChartProps {
+interface Props {
   data: { date: string; value: number }[];
 }
 
-export default function GlucoseChart({ data }: GlucoseChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Blood Glucose</h3>
-        <div className="h-48 flex items-center justify-center text-gray-400 dark:text-gray-500">
-          <p>No glucose data yet.</p>
-        </div>
-      </div>
-    );
-  }
+export default function GlucoseChart({ data }: Props) {
+  if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Blood Glucose</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-          <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              fontSize: "12px",
-            }}
-          />
-          <ReferenceLine y={140} stroke="#ef4444" strokeDasharray="5 5" label={{ value: "High", fontSize: 10 }} />
-          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="5 5" label={{ value: "Low", fontSize: 10 }} />
-          <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="chart-wrap">
+      <div className="chart-header">
+        <span className="chart-label">Blood Glucose</span>
+        <span className="chart-unit">mg/dL</span>
+      </div>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <ReferenceLine y={70} stroke="var(--chart-line-secondary)" strokeDasharray="4 4" strokeWidth={1} />
+            <ReferenceLine y={140} stroke="var(--chart-line-secondary)" strokeDasharray="4 4" strokeWidth={1} />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={["auto", "auto"]}
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "var(--text)",
+              }}
+              labelStyle={{ color: "var(--text-secondary)" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="var(--chart-line)"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: "var(--chart-line)", stroke: "none" }}
+              activeDot={{ r: 4, fill: "var(--chart-line)", stroke: "var(--bg)", strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <style jsx>{`
+        .chart-wrap { margin-bottom: 0; }
+        .chart-header {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+          padding: 0 0 12px;
+        }
+        .chart-label { font-size: 13px; font-weight: 500; color: var(--text); }
+        .chart-unit { font-size: 11px; color: var(--text-tertiary); }
+        .chart-body { margin: 0 -8px; }
+      `}</style>
     </div>
   );
 }

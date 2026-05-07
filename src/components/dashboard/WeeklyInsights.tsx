@@ -1,47 +1,87 @@
 "use client";
 
-import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { Lightbulb, TrendingUp, AlertCircle, Sparkles } from "lucide-react";
+import type { AIInsight } from "@/types/health";
 
-interface WeeklyInsightsProps {
-  insights: string[];
+interface Props {
+  insights: AIInsight[];
   weeklySummary: string;
 }
 
-export default function WeeklyInsights({ insights, weeklySummary }: WeeklyInsightsProps) {
-  const getIcon = (index: number) => {
-    const icons = [Lightbulb, TrendingUp, CheckCircle];
-    const Icon = icons[index % icons.length];
-    return <Icon className="w-4 h-4" />;
-  };
+const iconMap = {
+  trend: TrendingUp,
+  anomaly: AlertCircle,
+  observation: Lightbulb,
+  motivation: Sparkles,
+};
 
-  const getColor = (index: number) => {
-    const colors = [
-      "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-      "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
-      "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-    ];
-    return colors[index % colors.length];
-  };
-
+export default function WeeklyInsights({ insights, weeklySummary }: Props) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Weekly Insights</h3>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{weeklySummary}</p>
-      {insights.length > 0 && (
-        <div className="space-y-3">
-          {insights.map((insight, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-            >
-              <span className={`p-1.5 rounded-full ${getColor(i)}`}>
-                {getIcon(i)}
-              </span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{insight}</p>
-            </div>
-          ))}
+    <div className="insights-root">
+      {weeklySummary && (
+        <div className="insights-summary">
+          <p>{weeklySummary}</p>
         </div>
       )}
+      {insights && insights.length > 0 && (
+        <div className="insights-list">
+          {insights.filter(i => !i.dismissed).map((insight, idx) => {
+            const Icon = iconMap[insight.type] || Lightbulb;
+            return (
+              <div key={idx} className="insight-item">
+                <Icon size={14} strokeWidth={1.5} />
+                <span>{insight.content}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {(!insights || insights.length === 0) && !weeklySummary && (
+        <div className="insights-empty">
+          <Lightbulb size={20} strokeWidth={1} />
+          <p>No insights yet. Keep tracking to receive AI-powered observations.</p>
+        </div>
+      )}
+      <style jsx>{`
+        .insights-root { }
+        .insights-summary {
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--text);
+          padding: 12px 16px;
+          background: var(--bg-secondary);
+          border-radius: var(--radius-sm);
+          margin-bottom: 12px;
+          border-left: 2px solid var(--text);
+        }
+        .insights-summary p { margin: 0; }
+        .insights-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .insight-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          padding: 6px 0;
+        }
+        .insight-item span { flex: 1; }
+        .insights-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 24px;
+          color: var(--text-tertiary);
+          font-size: 12px;
+          text-align: center;
+        }
+        .insights-empty p { margin: 0; }
+      `}</style>
     </div>
   );
 }

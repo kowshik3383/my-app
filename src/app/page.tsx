@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
 import { useStore } from "@/store/useStore";
 import Onboarding from "@/components/Onboarding";
 import AvatarChat from "@/components/AvatarChat";
-import Header from "@/components/Header";
+import Sidebar from "@/components/layout/Sidebar";
 import { Toaster } from "react-hot-toast";
 import DashboardPage from "./dashboard/page";
+import GoalsPage from "./goals/page";
+import MemoryExplorer from "@/components/memory/MemoryExplorer";
 
 export default function Home() {
-  const { isOnboarded, showDashboard } = useStore();
+  const { isOnboarded, isDarkMode, currentView } = useStore();
 
   if (!isOnboarded) {
     return (
@@ -20,33 +21,41 @@ export default function Home() {
     );
   }
 
-  if (showDashboard) {
-    return <DashboardPage />;
-  }
-
   return (
     <div
       style={{
         height: "100vh",
         display: "flex",
-        flexDirection: "column",
-        background: isDarkMode ? "#0a0a0c" : "#f9f7f4",
-        transition: "background 0.25s ease",
+        background: "var(--bg)",
+        color: "var(--text)",
       }}
     >
-      <Header />
-      <main style={{ flex: 1, overflow: "hidden" }}>
-        <AvatarChat />
+      <Sidebar />
+      <main
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          background: "var(--bg)",
+          overflow: "hidden",
+        }}
+      >
+        {currentView === "chat" && <AvatarChat />}
+        {currentView === "dashboard" && <DashboardPage />}
+        {currentView === "goals" && <GoalsPage />}
+        {currentView === "memory" && <MemoryExplorer />}
       </main>
       <Toaster
         position="top-center"
         toastOptions={{
           style: {
-            background: isDarkMode ? "#1e1e22" : "#fff",
-            color: isDarkMode ? "#f0f0f0" : "#1a1a1a",
-            border: `1px solid ${isDarkMode ? "#333" : "#eeebe7"}`,
-            fontFamily: "'DM Sans', sans-serif",
+            background: "var(--card-bg)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            fontFamily: "var(--font-sans)",
             fontSize: 14,
+            borderRadius: "var(--radius-sm)",
           },
         }}
       />

@@ -1,55 +1,69 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-interface WeightChartProps {
+interface Props {
   data: { date: string; value: number }[];
-  trend?: "up" | "down" | "stable";
-  changePercent?: number;
 }
 
-export default function WeightChart({ data, trend, changePercent }: WeightChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Weight Trend</h3>
-        <div className="h-48 flex items-center justify-center text-gray-400 dark:text-gray-500">
-          <p>No weight data yet. Start tracking to see trends.</p>
-        </div>
-      </div>
-    );
-  }
+export default function WeightChart({ data }: Props) {
+  if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Weight Trend</h3>
-        {trend && changePercent !== undefined && (
-          <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-            trend === "down" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-            trend === "up" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-            "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-          }`}>
-            {trend === "down" ? "↓" : trend === "up" ? "↑" : "→"} {Math.abs(changePercent).toFixed(1)}%
-          </span>
-        )}
+    <div className="chart-wrap">
+      <div className="chart-header">
+        <span className="chart-label">Weight</span>
+        <span className="chart-unit">kg</span>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-          <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={["auto", "auto"]} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              fontSize: "12px",
-            }}
-          />
-          <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={["auto", "auto"]}
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "var(--text)",
+              }}
+              labelStyle={{ color: "var(--text-secondary)" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="var(--chart-line)"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: "var(--chart-line)", stroke: "none" }}
+              activeDot={{ r: 4, fill: "var(--chart-line)", stroke: "var(--bg)", strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <style jsx>{`
+        .chart-wrap { margin-bottom: 0; }
+        .chart-header {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+          padding: 0 0 12px;
+        }
+        .chart-label { font-size: 13px; font-weight: 500; color: var(--text); }
+        .chart-unit { font-size: 11px; color: var(--text-tertiary); }
+        .chart-body { margin: 0 -8px; }
+      `}</style>
     </div>
   );
 }

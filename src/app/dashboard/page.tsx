@@ -2,157 +2,276 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
-import { BarChart3, Loader2, RefreshCw } from "lucide-react";
+import { Loader2, LayoutDashboard, ChevronDown, ChevronRight } from "lucide-react";
+import Card from "@/components/ui/Card";
+import StatCard from "@/components/dashboard/StatCard";
 import WeightChart from "@/components/dashboard/WeightChart";
 import GlucoseChart from "@/components/dashboard/GlucoseChart";
 import SleepChart from "@/components/dashboard/SleepChart";
 import MoodTimeline from "@/components/dashboard/MoodTimeline";
 import MedicationTracker from "@/components/dashboard/MedicationTracker";
 import WeeklyInsights from "@/components/dashboard/WeeklyInsights";
-import HealthOverview from "@/components/dashboard/HealthOverview";
-import GoalList from "@/components/goals/GoalList";
 import type { DashboardData } from "@/types/health";
+import type { AIInsight } from "@/types/health";
 
 export default function DashboardPage() {
-  const { userProfile, setShowDashboard } = useStore();
+  const { userProfile } = useStore();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [insights, setInsights] = useState<AIInsight[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"health" | "goals">("health");
+  const [sections, setSections] = useState({
+    weight: true,
+    glucose: true,
+    sleep: true,
+    mood: true,
+    medication: true,
+    insights: true,
+  });
 
   useEffect(() => {
-    if (!userProfile?.id) {
-      setShowDashboard(false);
-      return;
-    }
+    if (!userProfile?.id) return;
     fetchDashboard();
+    fetchInsights();
   }, [userProfile?.id]);
 
   async function fetchDashboard() {
-    if (!userProfile?.id) return;
-    setLoading(true);
     try {
-      const res = await fetch(`/api/dashboard?userId=${userProfile.id}`);
+      setLoading(true);
+      const res = await fetch(`/api/dashboard?userId=${userProfile!.id}`);
       if (res.ok) {
-        const dashboardData = await res.json();
-        setData(dashboardData);
+        const json = await res.json();
+        setData(json);
       }
-    } catch (error) {
-      console.error("Failed to fetch dashboard:", error);
+    } catch (err) {
+      console.error("Failed to fetch dashboard:", err);
     } finally {
       setLoading(false);
     }
   }
 
-  if (!userProfile?.id) return null;
+  async function fetchInsights() {
+    try {
+      const res = await fetch(`/api/health/insights?userId=${userProfile!.id}&limit=10`);
+      if (res.ok) {
+        const json = await res.json();
+        setInsights(json.insights || json || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch insights:", err);
+    }
+  }
+
+  function toggleSection(key: keyof typeof sections) {
+    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">Loading your dashboard...</p>
-        </div>
+      <div className="dash-loading">
+        <Loader2 size={20} strokeWidth={1.5} className="dash-spinner" />
+        <style jsx>{`
+          .dash-loading {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+          }
+          .dash-spinner { animation: spin 1s linear infinite; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
       </div>
     );
   }
 
-  const weightData = data?.metrics.find((m) => m.type === "weight");
-  const glucoseData = data?.metrics.find((m) => m.type === "glucose");
-  const sleepData = data?.metrics.find((m) => m.type === "sleep");
-  const moodData = data?.metrics.find((m) => m.type === "mood");
-  const medicationData = data?.metrics.find((m) => m.type === "medication");
+  const metrics = data?.metrics || [];
+
+  const findMetric = (type: string) => metrics.find((m) => m.type === type);
+
+  const weightMetric = findMetric("weight");
+  const glucoseMetric = findMetric("glucose");
+  const hba1cMetric = findMetric("hbA1c");
+  const sleepMetric = findMetric("sleep");
+  const moodMetric = findMetric("mood");
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="w-6 h-6 text-blue-500" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Health Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchDashboard}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setShowDashboard(false)}
-              className="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Back to Chat
-            </button>
-          </div>
+    <div className="dash-root scrollbar-thin">
+      <div className="dash-header">
+        <div className="dash-title-row">
+          <LayoutDashboard size={18} strokeWidth={1.5} />
+          <h1>Dashboard</h1>
+        </div>
+        <p className="dash-subtitle">Your health at a glance</p>
+      </div>
+
+      <div className="dash-body">
+        {/* Stat Cards */}
+        <div className="dash-stats">
+          {weightMetric && (
+            <StatCard
+              label="Weight"
+              value={weightMetric.current}
+              unit={weightMetric.unit}
+              trend={weightMetric.trend}
+              changePercent={weightMetric.changePercent}
+            />
+          )}
+          {hba1cMetric && (
+            <StatCard
+              label="HbA1c"
+              value={hba1cMetric.current}
+              unit={hba1cMetric.unit}
+              trend={hba1cMetric.trend}
+              changePercent={hba1cMetric.changePercent}
+            />
+          )}
+          {sleepMetric && (
+            <StatCard
+              label="Sleep"
+              value={sleepMetric.current}
+              unit={sleepMetric.unit}
+              trend={sleepMetric.trend}
+              changePercent={sleepMetric.changePercent}
+              subtitle={sleepMetric.current >= 7 ? "Optimal range" : "Below target"}
+            />
+          )}
+          {moodMetric && (
+            <StatCard
+              label="Mood"
+              value={moodMetric.current}
+              unit={moodMetric.unit}
+              trend={moodMetric.trend}
+              changePercent={moodMetric.changePercent}
+            />
+          )}
         </div>
 
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab("health")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "health"
-                ? "bg-blue-500 text-white"
-                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
-            }`}
-          >
-            Health Metrics
+        {/* Chart Sections */}
+        {weightMetric?.data && weightMetric.data.length > 0 && (
+          <Card padding="lg" variant="bordered">
+            <button className="dash-section-toggle" onClick={() => toggleSection("weight")}>
+              {sections.weight ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+              Weight Tracking
+            </button>
+            {sections.weight && <WeightChart data={weightMetric.data} />}
+          </Card>
+        )}
+
+        {glucoseMetric?.data && glucoseMetric.data.length > 0 && (
+          <Card padding="lg" variant="bordered">
+            <button className="dash-section-toggle" onClick={() => toggleSection("glucose")}>
+              {sections.glucose ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+              Blood Glucose
+            </button>
+            {sections.glucose && <GlucoseChart data={glucoseMetric.data} />}
+          </Card>
+        )}
+
+        {sleepMetric?.data && sleepMetric.data.length > 0 && (
+          <Card padding="lg" variant="bordered">
+            <button className="dash-section-toggle" onClick={() => toggleSection("sleep")}>
+              {sections.sleep ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+              Sleep
+            </button>
+            {sections.sleep && <SleepChart data={sleepMetric.data} />}
+          </Card>
+        )}
+
+        {moodMetric?.data && moodMetric.data.length > 0 && (
+          <Card padding="lg" variant="bordered">
+            <button className="dash-section-toggle" onClick={() => toggleSection("mood")}>
+              {sections.mood ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+              Mood
+            </button>
+            {sections.mood && <MoodTimeline data={moodMetric.data} />}
+          </Card>
+        )}
+
+        {/* Insights */}
+        <Card padding="lg" variant="bordered">
+          <button className="dash-section-toggle" onClick={() => toggleSection("insights")}>
+            {sections.insights ? <ChevronDown size={14} strokeWidth={1.5} /> : <ChevronRight size={14} strokeWidth={1.5} />}
+            Weekly Insights
           </button>
-          <button
-            onClick={() => setActiveTab("goals")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "goals"
-                ? "bg-blue-500 text-white"
-                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
-            }`}
-          >
-            Goals
-          </button>
-        </div>
+          {sections.insights && (
+            <WeeklyInsights insights={insights} weeklySummary={data?.weeklySummary || ""} />
+          )}
+        </Card>
 
-        {activeTab === "health" ? (
-          <div className="space-y-6">
-            {data && <HealthOverview data={data} />}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <WeightChart
-                data={weightData?.data || []}
-                trend={weightData?.trend}
-                changePercent={weightData?.changePercent}
-              />
-              <GlucoseChart data={glucoseData?.data || []} />
-              <SleepChart data={sleepData?.data || []} />
-              <MoodTimeline data={moodData?.data || []} />
-              {medicationData && (
-                <MedicationTracker
-                  adherence={medicationData.current}
-                  streak={7}
-                />
-              )}
-            </div>
-
-            {data && (
-              <WeeklyInsights
-                insights={data.insights}
-                weeklySummary={data.weeklySummary}
-              />
-            )}
-
-            {!data?.metrics.some((m) => m.current > 0) && (
-              <div className="text-center py-12">
-                <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Start Tracking Your Health
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  Log your health metrics daily to unlock AI-powered insights, trends, and personalized recommendations.
-                </p>
-              </div>
-            )}
+        {metrics.length === 0 && (
+          <div className="dash-empty">
+            <p>No health data yet. Start tracking to see your dashboard populate.</p>
           </div>
-        ) : (
-          <GoalList userId={userProfile.id} />
         )}
       </div>
+
+      <style jsx>{`
+        .dash-root {
+          height: 100%;
+          overflow-y: auto;
+          background: var(--bg);
+        }
+        .dash-header {
+          padding: 32px 32px 20px;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .dash-title-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+        .dash-title-row h1 {
+          font-size: 20px;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          color: var(--text);
+          margin: 0;
+        }
+        .dash-subtitle {
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin: 0 0 0 28px;
+        }
+        .dash-body {
+          padding: 24px 32px 32px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .dash-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          gap: 12px;
+          margin-bottom: 8px;
+        }
+        .dash-section-toggle {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          background: none;
+          border: none;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text);
+          padding: 0 0 0;
+          cursor: pointer;
+          font-family: var(--font-sans);
+          text-align: left;
+          transition: color var(--transition-fast);
+        }
+        .dash-section-toggle:hover {
+          color: var(--text-secondary);
+        }
+        .dash-empty {
+          padding: 32px;
+          text-align: center;
+          color: var(--text-tertiary);
+          font-size: 13px;
+        }
+      `}</style>
     </div>
   );
 }

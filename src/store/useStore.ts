@@ -33,6 +33,8 @@ interface UserProfile {
   coachingStyle?: CoachingStyle;
 }
 
+export type ViewType = "chat" | "dashboard" | "goals" | "memory";
+
 interface Store {
   userProfile: UserProfile | null;
   setUserProfile: (profile: UserProfile | null) => void;
@@ -56,6 +58,14 @@ interface Store {
   setShowDashboard: (value: boolean) => void;
   coachingStyle: CoachingStyle;
   setCoachingStyle: (style: CoachingStyle) => void;
+
+  isDarkMode: boolean;
+  setIsDarkMode: (value: boolean) => void;
+  interactionMode: string;
+  setInteractionMode: (value: string) => void;
+
+  currentView: ViewType;
+  setCurrentView: (view: ViewType) => void;
 }
 
 export const useStore = create<Store>()(
@@ -83,6 +93,14 @@ export const useStore = create<Store>()(
       setShowDashboard: (value) => set({ showDashboard: value }),
       coachingStyle: "supportive_mentor",
       setCoachingStyle: (style) => set({ coachingStyle: style }),
+
+      isDarkMode: false,
+      setIsDarkMode: (value) => set({ isDarkMode: value }),
+      interactionMode: "chat",
+      setInteractionMode: (value) => set({ interactionMode: value }),
+
+      currentView: "chat",
+      setCurrentView: (view) => set({ currentView: view }),
     }),
     {
       name: "health-companion-storage",

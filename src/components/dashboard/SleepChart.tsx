@@ -1,42 +1,68 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
-interface SleepChartProps {
+interface Props {
   data: { date: string; value: number }[];
 }
 
-export default function SleepChart({ data }: SleepChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sleep Quality</h3>
-        <div className="h-48 flex items-center justify-center text-gray-400 dark:text-gray-500">
-          <p>No sleep data yet.</p>
-        </div>
-      </div>
-    );
-  }
+export default function SleepChart({ data }: Props) {
+  if (!data || data.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sleep Hours</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-          <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={[0, 12]} />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              fontSize: "12px",
-            }}
-          />
-          <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="chart-wrap">
+      <div className="chart-header">
+        <span className="chart-label">Sleep</span>
+        <span className="chart-unit">hours</span>
+      </div>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={[0, 12]}
+              tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "var(--card-bg)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "var(--text)",
+              }}
+              labelStyle={{ color: "var(--text-secondary)" }}
+            />
+            <Bar
+              dataKey="value"
+              fill="var(--chart-line)"
+              radius={[3, 3, 0, 0]}
+              maxBarSize={24}
+              opacity={0.8}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <style jsx>{`
+        .chart-wrap { margin-bottom: 0; }
+        .chart-header {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+          padding: 0 0 12px;
+        }
+        .chart-label { font-size: 13px; font-weight: 500; color: var(--text); }
+        .chart-unit { font-size: 11px; color: var(--text-tertiary); }
+        .chart-body { margin: 0 -8px; }
+      `}</style>
     </div>
   );
 }
