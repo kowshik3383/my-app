@@ -210,6 +210,8 @@ export async function POST(request: NextRequest) {
       } catch {
         audioBase64 = "";
       }
+    } else {
+      console.log("CARTESIA_API_KEY not found, will use browser speech synthesis");
     }
 
     const aiMessageResult = await messagesCollection.insertOne({
@@ -255,7 +257,7 @@ export async function POST(request: NextRequest) {
         id: aiMessage?._id.toString(),
         role: aiMessage?.role,
         content: aiMessage?.content,
-        audioBase64: aiMessage?.audioBase64,
+        audio: audioDataUrl, // Use the generated audio data URL directly
         lipsync: aiMessage?.lipsync,
         animation: aiMessage?.animation,
         facialExpression: aiMessage?.facialExpression,

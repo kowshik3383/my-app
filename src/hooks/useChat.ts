@@ -1,6 +1,7 @@
 import { create } from "zustand";
+import { extractEmotionTags, stripEmotionTags } from "@/lib/lipsync";
 
-interface Message {
+interface AvatarMessage {
   text: string;
   audio: string;
   lipsync: any;
@@ -8,14 +9,29 @@ interface Message {
   animation: string;
 }
 
+export interface DisplayMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;       // clean text without emotion tags
+  rawText?: string;   // original with emotion tags
+  emotion?: string;   // primary emotion tag
+  timestamp: Date;
+}
+
 interface ChatState {
-  messages: Message[];
-  message: Message | null;
+  // Avatar processing queue
+  messages: AvatarMessage[];
+  message: AvatarMessage | null;
   loading: boolean;
   cameraZoomed: boolean;
+
+  // Chat display history
+  displayMessages: DisplayMessage[];
+
   chat: (text: string) => Promise<void>;
   onMessagePlayed: () => void;
   setCameraZoomed: (zoomed: boolean) => void;
+  clearHistory: () => void;
 }
 
 export const useChat = create<ChatState>((set, get) => ({
@@ -23,22 +39,29 @@ export const useChat = create<ChatState>((set, get) => ({
   message: null,
   loading: false,
   cameraZoomed: true,
+  displayMessages: [],
 
   chat: async (text: string) => {
-    if (!text || text.trim() === "") {
-      return;
-    }
+    if (!text || text.trim() === "") return;
 
     set({ loading: true });
 
+    // Add user message to display history immediately
+    const userMsg: DisplayMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      text: text.trim(),
+      timestamp: new Date(),
+    };
+    set((state) => ({ displayMessages: [...state.displayMessages, userMsg] }));
+
     try {
-      // Get user profile from localStorage (zustand persisted state)
       const storedState = localStorage.getItem("health-companion-storage");
       const userProfile = storedState
-        ? JSON.parse(storedState).state.userProfile
+        ? JSON.parse(storedState).state?.userProfile
         : null;
       const currentSessionId = storedState
-        ? JSON.parse(storedState).state.currentSessionId
+        ? JSON.parse(storedState).state?.currentSessionId
         : null;
 
       if (!userProfile?.id) {
@@ -47,7 +70,7 @@ export const useChat = create<ChatState>((set, get) => ({
         return;
       }
 
-      // Initialize session if not exists
+      // Create/reuse session
       let sessionId = currentSessionId;
       if (!sessionId) {
         const sessionResponse = await fetch("/api/session", {
@@ -55,15 +78,9 @@ export const useChat = create<ChatState>((set, get) => ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: userProfile.id }),
         });
-
-        if (!sessionResponse.ok) {
-          throw new Error("Failed to create session");
-        }
-
+        if (!sessionResponse.ok) throw new Error("Failed to create session");
         const { session } = await sessionResponse.json();
         sessionId = session.id;
-
-        // Update session in localStorage
         if (storedState) {
           const parsed = JSON.parse(storedState);
           parsed.state.currentSessionId = sessionId;
@@ -71,35 +88,45 @@ export const useChat = create<ChatState>((set, get) => ({
         }
       }
 
-      // Send message to chat API
+      // Send to chat API
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: userProfile.id,
-          sessionId: sessionId,
-          message: text,
-        }),
+        body: JSON.stringify({ userId: userProfile.id, sessionId, message: text }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
+      if (!response.ok) throw new Error("Failed to send message");
 
       const data = await response.json();
+      const rawContent: string = data.message.content || "";
 
-      // Create message object for avatar
-      const aiMessage: Message = {
-        text: data.message.content,
-        audio: data.message.audioBase64 || "",
+      // Parse emotion tags
+      const emotions = extractEmotionTags(rawContent);
+      const primaryEmotion = emotions[0] || "happy";
+      const cleanText = stripEmotionTags(rawContent);
+
+      // Add AI message to display history
+      const aiDisplayMsg: DisplayMessage = {
+        id: `ai-${Date.now()}`,
+        role: "assistant",
+        text: cleanText,
+        rawText: rawContent,
+        emotion: primaryEmotion,
+        timestamp: new Date(),
+      };
+      set((state) => ({ displayMessages: [...state.displayMessages, aiDisplayMsg] }));
+
+      // Build avatar message (uses clean text for TTS fallback)
+      const avatarMsg: AvatarMessage = {
+        text: cleanText,
+        audio: data.message.audio || "",
         lipsync: data.message.lipsync || { mouthCues: [] },
         facialExpression: data.message.facialExpression || "smile",
         animation: data.message.animation || "Talking_1",
       };
 
       set((state) => ({
-        messages: [...state.messages, aiMessage],
-        message: aiMessage,
+        messages: [...state.messages, avatarMsg],
+        message: avatarMsg,
         loading: false,
       }));
     } catch (error) {
@@ -109,10 +136,16 @@ export const useChat = create<ChatState>((set, get) => ({
   },
 
   onMessagePlayed: () => {
-    set({ message: null });
+    set((state) => {
+      const remaining = state.messages.slice(1);
+      return {
+        messages: remaining,
+        message: remaining[0] || null,
+      };
+    });
   },
 
-  setCameraZoomed: (zoomed: boolean) => {
-    set({ cameraZoomed: zoomed });
-  },
+  setCameraZoomed: (zoomed: boolean) => set({ cameraZoomed: zoomed }),
+
+  clearHistory: () => set({ displayMessages: [], messages: [], message: null }),
 }));

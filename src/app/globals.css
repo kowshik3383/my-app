@@ -5,6 +5,12 @@
   --foreground: #1f2937;
 }
 
+/* Dark mode applied via html.dark (toggled by page.tsx) */
+html.dark {
+  --background: #0a0a0c;
+  --foreground: #f0f0f0;
+}
+
 @theme inline {
   /* Health-themed color palette */
   --color-primary: #10b981; /* green-500 - health & vitality */
@@ -33,12 +39,8 @@
   --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-  }
-}
+/* Dark mode is user-controlled via html.dark class — see page.tsx */
+/* System dark-mode media query removed to avoid conflicting with the toggle */
 
 @layer base {
   * {

@@ -6,6 +6,7 @@ import {
   Environment,
   Text,
 } from "@react-three/drei";
+import AvatarBackground from "./AvatarBackground";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useChat } from "@/hooks/useChat";
 import { Avatar } from "./Avatar";
@@ -69,7 +70,10 @@ export const Experience = () => {
   return (
     <>
       <CameraControls ref={cameraControls} />
-      <Environment preset="sunset" />
+      <Environment
+        files="/hdr/avatar-world.hdr"
+        background
+      />
       {/* Wrapping Dots into Suspense to prevent Blink when Troika/Font is loaded */}
       <Suspense>
         <Dots position-y={1.75} position-x={-0.02} />

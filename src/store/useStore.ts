@@ -1,7 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type AIRole = "mother" | "father" | "brother" | "sister" | "grandparent" | "doctor" | "coach" | "friend";
+export type AIRole =
+  | "mother" | "father" | "brother" | "sister" | "grandparent"
+  | "doctor" | "therapist" | "nurse"
+  | "coach" | "mentor" | "teacher"
+  | "friend" | "best_friend" | "girlfriend" | "partner"
+  | "leader" | "boss" | "teammate"
+  | "spiritual_guide" | "motivator" | "caregiver";
+
 export type AIModulation = "soft_caring" | "strict_motivational" | "professional" | "energetic" | "calm";
 export type Language = "en" | "hi" | "ta" | "te" | "bn";
 export type DiseaseFocus = "diabetes" | "heart" | "weight_loss" | "pcos" | "mental_health" | "custom";
@@ -28,7 +35,7 @@ interface UserProfile {
 
 interface Store {
   userProfile: UserProfile | null;
-  setUserProfile: (profile: UserProfile) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
   isOnboarded: boolean;
   setIsOnboarded: (value: boolean) => void;
 

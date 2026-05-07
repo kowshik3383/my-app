@@ -418,6 +418,7 @@ export default function Onboarding() {
                 </div>
                 {i < steps.length - 1 && (
                   <div className={`ob-step-line ${step > s.number ? "done" : ""}`} />
+                  <div className={`ob-step-line ${step > s.number ? "done" : ""}`} />
                 )}
               </Fragment>
             ))}
