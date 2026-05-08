@@ -14,7 +14,7 @@ const items = [
 
 export default function SecuritySection() {
   return (
-    <section className="py-28 bg-gray-50 dark:bg-[#0d0d0d]">
+    <section className="py-28 bg-[#fafafa]">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -23,13 +23,13 @@ export default function SecuritySection() {
           transition={{ duration: 0.6 }}
           className="max-w-2xl mx-auto text-center mb-12"
         >
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-5">
-            <Shield size={24} className="text-emerald-600 dark:text-emerald-400" />
+          <div className="w-14 h-14 rounded-2xl bg-[#f0f0f0] flex items-center justify-center mx-auto mb-5">
+            <Shield size={24} className="text-[#444444]" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-black dark:text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#111111] mb-4">
             Your Privacy Is Our Foundation
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-[#666666]">
             We take security seriously. Your health data belongs to you, and we built
             our infrastructure to protect it at every layer.
           </p>
@@ -49,10 +49,10 @@ export default function SecuritySection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-[#141414] border border-gray-200 dark:border-white/10"
+              className="flex items-center gap-3 p-4 rounded-xl bg-white border border-[#e5e5e5] hover:shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all"
             >
-              <item.icon size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span className="text-sm text-gray-700 dark:text-gray-200">{item.label}</span>
+              <item.icon size={16} className="text-[#444444] flex-shrink-0" />
+              <span className="text-sm text-[#444444]">{item.label}</span>
             </motion.div>
           ))}
         </motion.div>

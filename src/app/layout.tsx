@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Health Companion V2 — Your Personal Health Operating System",
+  title: "Health OS — Your AI Health Companion",
   description:
     "Track your health, emotions, goals, sleep, habits, and progress with an AI companion that actually remembers you. Persistent memory, emotional intelligence, voice conversations, and proactive coaching.",
 };
@@ -24,14 +24,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className="!bg-transparent"
-      style={{ background: "transparent !important" }}
-    >
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased !bg-transparent`}
-        style={{ background: "transparent !important" }}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>

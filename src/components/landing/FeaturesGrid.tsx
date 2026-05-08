@@ -23,7 +23,7 @@ const features = [
 
 export default function FeaturesGrid() {
   return (
-    <section className="py-28 bg-gray-50 dark:bg-[#0d0d0d]">
+    <section className="py-28 bg-[#fafafa]">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -32,10 +32,13 @@ export default function FeaturesGrid() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-xs font-semibold tracking-widest text-gray-400 dark:text-gray-500 uppercase">Everything You Need</span>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-black dark:text-white mt-3">
+          <span className="text-xs font-semibold tracking-widest text-[#999999] uppercase">Everything You Need</span>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#111111] mt-4">
             A Complete Health OS
           </h2>
+          <p className="text-sm text-[#666666] mt-3 max-w-xl mx-auto">
+            Every feature you need to understand and improve your health, powered by AI.
+          </p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -46,11 +49,13 @@ export default function FeaturesGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.03 }}
-              className="group p-5 rounded-xl bg-white dark:bg-[#141414] border border-gray-200 dark:border-white/10 hover:border-emerald-200 dark:hover:border-emerald-800/50 hover:shadow-sm transition-all"
+              className="group p-5 rounded-2xl bg-white border border-[#e5e5e5] hover:shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:border-[#d4d4d4] transition-all duration-300"
             >
-              <feat.icon size={18} className="text-emerald-600 dark:text-emerald-400 mb-3 group-hover:scale-110 transition-transform" />
-              <h4 className="text-sm font-semibold text-black dark:text-white mb-1">{feat.label}</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{feat.desc}</p>
+              <div className="w-9 h-9 rounded-lg bg-[#f5f5f5] flex items-center justify-center mb-3 group-hover:bg-[#e5e5e5] transition-colors">
+                <feat.icon size={16} className="text-[#444444]" />
+              </div>
+              <h4 className="text-sm font-semibold text-[#111111] mb-1">{feat.label}</h4>
+              <p className="text-xs text-[#888888]">{feat.desc}</p>
             </motion.div>
           ))}
         </div>

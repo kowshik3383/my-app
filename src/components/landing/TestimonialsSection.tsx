@@ -36,7 +36,7 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-28 bg-white dark:bg-[#0a0a0a]">
+    <section className="py-28 bg-white">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -45,10 +45,13 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-xs font-semibold tracking-widest text-gray-400 dark:text-gray-500 uppercase">Testimonials</span>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-black dark:text-white mt-3">
+          <span className="text-xs font-semibold tracking-widest text-[#999999] uppercase">Testimonials</span>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#111111] mt-4">
             Loved by Real Users
           </h2>
+          <p className="text-sm text-[#666666] mt-3 max-w-xl mx-auto">
+            See how Health OS is transforming lives.
+          </p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 gap-6">
@@ -59,23 +62,23 @@ export default function TestimonialsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="p-6 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]"
+              className="p-6 rounded-2xl border border-[#e5e5e5] bg-white hover:shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-300"
             >
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: t.rating }).map((_, j) => (
-                  <Star key={j} size={14} className="fill-emerald-500 text-emerald-500" />
+                  <Star key={j} size={14} className="fill-[#111111] text-[#111111]" />
                 ))}
               </div>
-              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed mb-6">
+              <p className="text-sm text-[#444444] leading-relaxed mb-6">
                 &ldquo;{t.text}&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <div className="w-9 h-9 rounded-full bg-[#f0f0f0] flex items-center justify-center text-xs font-semibold text-[#444444]">
                   {t.avatar}
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-black dark:text-white">{t.name}</span>
-                  <span className="text-xs text-gray-400 block">{t.role}</span>
+                  <span className="text-sm font-semibold text-[#111111]">{t.name}</span>
+                  <span className="text-xs text-[#888888] block">{t.role}</span>
                 </div>
               </div>
             </motion.div>
