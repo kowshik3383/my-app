@@ -1,0 +1,189 @@
+# Health OS — Complete Platform Reference
+
+## Overview
+Health OS is a production-grade AI health companion platform built with Next.js 16 App Router. It features a persistent memory engine, comprehensive health analytics dashboard, AI-powered goal tracking with adaptive coaching, and a lifelike 3D avatar with voice conversations. The platform supports 5 Indian languages and serves as a personal health operating system.
+
+## Tech Stack
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router), React 19 |
+| Language | TypeScript (strict mode) |
+| Styling | Tailwind CSS v4, CSS custom properties |
+| State Management | Zustand with persist middleware |
+| AI Orchestration | OpenRouter (provider-agnostic) |
+| Database | MongoDB (native driver, vector search) |
+| 3D Rendering | React Three Fiber, Three.js, drei |
+| Charts | Recharts |
+| Voice | ElevenLabs TTS, Cartesia TTS, Web Speech API |
+| Animation | Framer Motion |
+| Icons | Lucide React |
+
+## Route Structure
+
+### Public Routes (Indexable)
+| Route | Description | Priority |
+|-------|-------------|----------|
+| `/` | Landing page with 12 sections | 1.0 |
+| `/demo` | Avatar Studio - 3D avatar customization | 0.6 |
+
+### Private Routes (Non-indexable, require auth)
+| Route | Description |
+|-------|-------------|
+| `/app` | Main app shell with sidebar + 4 views (chat, dashboard, goals, memory) |
+| `/dashboard` | Health analytics dashboard with charts |
+| `/goals` | Goal tracking and management |
+
+### Debug/Test Routes (Blocked from search)
+| Route | Description |
+|-------|-------------|
+| `/test-cartesia` | Cartesia TTS debug page |
+
+### API Routes
+| Route | Methods | Purpose |
+|-------|---------|---------|
+| `/api/chat` | POST | AI chat with streaming SSE, memory injection, TTS, lipsync |
+| `/api/session` | GET, POST | Session CRUD |
+| `/api/profile` | GET, POST, PUT | User profile management |
+| `/api/voice` | POST | ElevenLabs TTS generation |
+| `/api/dashboard` | GET, POST | Dashboard data aggregation |
+| `/api/health/metrics` | GET, POST | Health metric logging |
+| `/api/health/insights` | GET, POST, PATCH | AI health insights |
+| `/api/goals` | GET, POST, PATCH, DELETE | Goal CRUD |
+| `/api/goals/evaluate` | POST | Batch goal evaluation |
+| `/api/memories` | GET, DELETE | Memory management |
+
+## Memory System
+The memory engine uses semantic vector search with MongoDB to provide persistent context:
+
+### Memory Types
+- **episodic**: Specific events and conversations
+- **health_fact**: Health data points and measurements
+- **behavioral**: Behavior patterns and habits
+- **emotional**: Emotional states and reactions
+- **summary**: Session summaries (auto-generated every 20 messages)
+
+### Memory Pipeline
+1. Message created → saved to MongoDB
+2. Memory extraction runs in background (non-blocking)
+3. Embeddings generated via text-embedding-3-small
+4. Stored in vector database
+5. Emotional signals detected and stored
+6. Session summarization every 20 messages
+
+### Retrieval
+- Semantic search with cosine similarity
+- Recency weighting
+- Token-budgeted context injection
+- Configurable importance thresholds
+
+## AI Orchestration
+
+### Model Routing
+| Task | Primary | Fallback |
+|------|---------|----------|
+| Fast Chat | GPT-4o-mini | Mistral Small |
+| Reasoning | Claude Sonnet 4 | GPT-4.1 |
+| Memory | Mistral Small | - |
+| Embeddings | text-embedding-3-small | - |
+| Insights | Mistral Small | - |
+
+### 22 AI Roles
+mother, father, brother, sister, grandparent, doctor, therapist, nurse, coach, mentor, teacher, friend, best_friend, girlfriend, partner, leader, boss, teammate, spiritual_guide, motivator, caregiver
+
+### 5 AI Modulations
+soft_caring, strict_motivational, professional, energetic, calm
+
+### 4 Coaching Styles
+strict_coach, supportive_mentor, calm_doctor, accountability_partner
+
+### 5 Languages
+English (en), Hindi (hi), Tamil (ta), Telugu (te), Bengali (bn)
+
+### 6 Disease Focus Areas
+diabetes, heart, weight_loss, pcos, mental_health, custom
+
+## Health Tracking Features
+- **Weight**: Track weight with trend analysis
+- **Glucose**: Blood glucose monitoring with reference ranges
+- **HbA1c**: Long-term glucose control tracking
+- **Sleep**: Sleep hours tracking with optimal range detection
+- **Mood**: Emotional state tracking (1-10 scale)
+- **Medication**: Adherence tracking with ring visualization
+- **Exercise**: Exercise minutes tracking
+- **Steps**: Daily step counting
+- **Hydration**: Water intake tracking
+
+## Goal Tracking System
+8 goal types: weight_loss, hbA1c_reduction, sleep, water_intake, walking, medication, exercise, custom
+
+Features:
+- Streak tracking (current + best)
+- Progress percentage calculation
+- Daily goal evaluation with coaching messages
+- Reminder configuration (daily/weekly/custom)
+- 4 coaching personalities with distinct communication styles
+
+## 3D Avatar System
+- Model format: GLB/FBX
+- 18 facial expressions
+- Viseme-based lipsync mapping
+- 10+ animations (Talking variants, Idle, Rumba, Crying, Laughing, Angry, Terrified, Moonwalk)
+- Emotion-to-animation mapping
+- HDR environment lighting
+
+## Voice System
+- ElevenLabs TTS: 5 voices matching AI modulations
+- Cartesia TTS: sonic-2 model
+- Web Speech API: browser-based fallback
+- Voice recording via Web Speech API
+- Audio playback with mute control
+
+## Dashboard Components
+- StatCard: Metric display with trend indicator
+- WeightChart: Line chart for weight tracking
+- GlucoseChart: Line chart with target ranges
+- SleepChart: Bar chart for sleep patterns
+- MoodTimeline: Area chart for mood tracking
+- MedicationTracker: Ring chart for adherence
+- WeeklyInsights: AI-generated insight cards
+
+## Onboarding Flow
+4-step wizard:
+1. Choose AI Role (22 options)
+2. Choose AI Modulation (5 options)  
+3. Choose Language (5 options)
+4. Choose Health Focus (6 options)
+
+## Database Collections (MongoDB)
+- users: User profiles with AI configuration
+- sessions: Chat sessions
+- messages: Individual messages with audio/lipsync metadata
+- health_metrics: Time-series health data
+- goals: Goal definitions with coaching style
+- goal_progress: Daily progress logs
+- memories: Memory documents with embeddings
+- memory_summaries: Session summaries
+- ai_insights: Generated health insights
+- vector_store: Generic vector storage
+
+## Environment Variables
+OPENROUTER_API_KEY=           # Required
+DATABASE_URL=                  # Required (MongoDB)
+OPENROUTER_BASE_URL=           # Default: https://openrouter.ai/api/v1
+OPENROUTER_MODEL_FAST=         # Default: openai/gpt-4o-mini
+OPENROUTER_MODEL_REASONING=    # Default: anthropic/claude-sonnet-4
+OPENROUTER_MODEL_MEMORY=       # Default: mistralai/mistral-small
+NEXT_PUBLIC_APP_URL=           # Default: http://localhost:3000
+ELEVENLABS_API_KEY=            # Optional
+CARTESIA_API_KEY=              # Optional
+
+## Security
+- API keys are server-side only
+- MongoDB connection string stored in environment variables
+- No secrets exposed to client bundle
+- Audit logging via observability layer
+
+## Deployment
+- Optimized for Vercel deployment
+- MongoDB Atlas for database (auto-creates collections)
+- Environment variables configured in deployment platform

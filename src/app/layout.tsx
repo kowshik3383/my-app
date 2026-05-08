@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { generateMetadata } from "@/lib/seo/metadata";
+import { jsonLd, softwareApplicationSchema, webApplicationSchema, organizationSchema } from "@/lib/seo/structured-data";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,11 +14,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Health OS — Your AI Health Companion",
-  description:
-    "Track your health, emotions, goals, sleep, habits, and progress with an AI companion that actually remembers you. Persistent memory, emotional intelligence, voice conversations, and proactive coaching.",
-};
+export const metadata: Metadata = generateMetadata();
+
+const schemas = jsonLd(
+  softwareApplicationSchema(),
+  webApplicationSchema(),
+  organizationSchema(),
+);
 
 export default function RootLayout({
   children,
@@ -25,6 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>{schemas}</head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

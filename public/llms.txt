@@ -1,0 +1,41 @@
+# Health OS — AI Health Companion
+> A persistent, proactive, production-grade AI health platform with long-term memory, health analytics, goal tracking, and a lifelike 3D avatar.
+
+## Core Features
+- **Persistent Memory Engine**: Episodic, behavioral, emotional, and health-fact memory with semantic vector search
+- **Health Dashboard**: Track weight, glucose, HbA1c, sleep, mood, medication with AI-powered insights
+- **AI Goal Tracking**: 8 goal types, 4 coaching personalities, streak tracking, daily evaluations
+- **3D Avatar**: Lifelike avatar with 18 facial expressions, lipsync, and 10+ animations
+- **Voice Conversations**: ElevenLabs TTS (5 voices), Cartesia TTS, Web Speech API input
+- **Multilingual**: English, Hindi, Tamil, Telugu, Bengali
+- **Emotional Intelligence**: Detects mood, adapts tone, provides empathetic responses
+
+## Important URLs
+- Landing page: https://health-os.vercel.app/
+- App dashboard: https://health-os.vercel.app/app
+- Avatar studio: https://health-os.vercel.app/demo
+
+## API Endpoints
+- POST /api/chat - Send message, get streaming AI response with memory context
+- GET/POST /api/session - Session management
+- GET/POST/PUT /api/profile - User profile CRUD
+- POST /api/voice - TTS voice generation
+- GET/POST /api/dashboard - Aggregated health dashboard data
+- GET/POST /api/health/metrics - Health metric tracking
+- GET/POST/PATCH /api/health/insights - AI-generated health insights
+- GET/POST/PATCH/DELETE /api/goals - Goal CRUD with progress
+- POST /api/goals/evaluate - Batch evaluate goals
+- GET/DELETE /api/memories - Memory retrieval and management
+
+## Architecture
+- Next.js 16 App Router + React 19 + TypeScript
+- OpenRouter AI (provider-agnostic: GPT-4o-mini, Claude Sonnet, Mistral)
+- MongoDB with vector search for memory
+- React Three Fiber for 3D avatar
+- Zustand for state management
+
+## AI Roles
+22 roles: mother, father, doctor, therapist, coach, mentor, friend, partner, caregiver, etc.
+
+## Health Tracking
+Metrics: weight, glucose, HbA1c, sleep, mood, exercise, steps, medication, hydration, water
