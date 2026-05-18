@@ -99,7 +99,7 @@ export default function AvatarChat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { interactionMode, setInteractionMode, isDarkMode, userProfile } = useStore();
+  const { interactionMode, setInteractionMode, isDarkMode, userProfile, setCurrentView, setInCall } = useStore();
   const { isRecording, transcript, startRecording, stopRecording, error } = useVoiceRecording();
   const { chat, loading, displayMessages } = useChat();
 
@@ -208,7 +208,10 @@ export default function AvatarChat() {
                 className="ac-textarea"
               />
               <div className="ac-actions">
-                <button onClick={() => setInteractionMode("voice_call")}
+                <button onClick={() => {
+                  setCurrentView("voice_call");
+                  setInCall(true);
+                }}
                   className="ac-btn" aria-label="Voice call">
                   <Phone size={14} strokeWidth={1.5} />
                 </button>

@@ -1,16 +1,21 @@
-# AI Health Companion V2
+# AI Health Companion V2 — Realtime Voice
 
-A persistent, proactive, production-grade AI health platform built with Next.js. Features long-term memory, health analytics dashboard, goal tracking, and a provider-agnostic AI orchestration layer powered by OpenRouter.
+A persistent, proactive, production-grade AI health platform built with Next.js. Features long-term memory, health analytics dashboard, goal tracking, provider-agnostic AI orchestration (OpenRouter), and **full duplex realtime voice calling** with natural interruption.
 
 ## Features
 
-- **Persistent Memory Engine** — Episodic, behavioral, emotional, and health-fact memory with semantic retrieval
-- **Health Dashboard** — Weight, glucose, sleep, mood, medication tracking with AI-powered insights
-- **Goal Tracking** — Set health goals, track streaks, get AI coaching with adaptive personalities
-- **3D Avatar** — Realistic avatar with facial expressions, lipsync, and animations
-- **Multilingual** — English, Hindi, Tamil, Telugu, Bengali
-- **Streaming AI Responses** — Real-time token-by-token streaming via SSE
-- **Provider-Agnostic AI** — OpenRouter with model routing (fast chat, reasoning, memory, embeddings)
+- **🎙️ Realtime Voice Calling** — Phone-call-style duplex conversation with <1s perceived latency
+- **⏱️ Natural Interruption** — Speak over the AI; it stops, listens, and responds naturally
+- **🧠 Persistent Memory Engine** — Episodic, behavioral, emotional, and health-fact memory with semantic retrieval
+- **📊 Health Dashboard** — Weight, glucose, sleep, mood, medication tracking with AI-powered insights
+- **🎯 Goal Tracking** — Set health goals, track streaks, get AI coaching with adaptive personalities
+- **👤 3D Avatar** — Realistic avatar with facial expressions, lipsync, and animations
+- **🌐 Multilingual** — English, Hindi, Tamil, Telugu, Bengali
+- **⚡ Streaming AI Responses** — Real-time token-by-token streaming via WebSocket
+- **🔌 Provider-Agnostic AI** — OpenRouter with model routing (fast chat, reasoning, memory, embeddings)
+- **🔄 WebSocket Streaming** — Bidirectional audio + data streaming with auto-reconnect
+- **🎨 Premium Call UI** — Animated orb, live waveform, transcript panel, connection indicator
+- **📋 Call Summaries** — Automatic post-call summaries with health signal extraction
 
 ## Tech Stack
 
@@ -23,14 +28,18 @@ A persistent, proactive, production-grade AI health platform built with Next.js.
 | Database | MongoDB (native driver) with vector search |
 | Charts | Recharts |
 | 3D | React Three Fiber, Three.js |
-| Voice | ElevenLabs TTS, Web Speech API |
+| Voice | WebSocket streaming, Web Speech API STT, Cartesia TTS |
+| Realtime | WebSocket server (ws library), Silero VAD, Jitter Buffer |
 
 ## Quick Start
 
 ```bash
-npm install
-cp .env.example .env.local   # configure keys
-npm run dev                   # http://localhost:3000
+pnpm install
+cp .env.example .env   # configure your API keys
+pnpm dev               # http://localhost:3000
+pnpm dev:voice         # WebSocket voice server on ws://localhost:3001
+# OR run both at once:
+pnpm dev:all
 ```
 
 ## Environment Variables
@@ -40,14 +49,25 @@ npm run dev                   # http://localhost:3000
 OPENROUTER_API_KEY=
 DATABASE_URL=
 
+# Voice (required for realtime calling)
+CARTESIA_API_KEY=sk_car_...
+# ELEVENLABS_API_KEY=sk_...
+
 # OpenRouter (optional overrides)
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL_FAST=openai/gpt-4o-mini
 OPENROUTER_MODEL_REASONING=anthropic/claude-sonnet-4
 OPENROUTER_MODEL_MEMORY=mistralai/mistral-small
 
-# Optional
-ELEVENLABS_API_KEY=
+# Realtime Voice Server
+WS_PORT=3001
+WS_HOST=0.0.0.0
+NEXT_PUBLIC_WS_URL=ws://localhost:3001
+
+# STT/TTS
+STT_PROVIDER=openai
+TTS_PROVIDER=cartesia
+TTS_VOICE_ID=sonic-2
 ```
 
 ## Architecture

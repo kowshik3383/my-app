@@ -8,9 +8,10 @@ import { Toaster } from "react-hot-toast";
 import DashboardPage from "../dashboard/page";
 import GoalsPage from "../goals/page";
 import MemoryExplorer from "@/components/memory/MemoryExplorer";
+import { CallScreen } from "@/components/realtime/CallScreen";
 
 export default function AppHome() {
-  const { isOnboarded, currentView } = useStore();
+  const { isOnboarded, currentView, setCurrentView, setInCall } = useStore();
 
   if (!isOnboarded) {
     return (
@@ -45,6 +46,14 @@ export default function AppHome() {
         {currentView === "dashboard" && <DashboardPage />}
         {currentView === "goals" && <GoalsPage />}
         {currentView === "memory" && <MemoryExplorer />}
+        {currentView === "voice_call" && (
+          <CallScreen
+            onEndCall={() => {
+              setCurrentView("chat");
+              setInCall(false);
+            }}
+          />
+        )}
       </main>
       <Toaster
         position="top-center"

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Target,
   Brain,
+  Phone,
   Sun,
   Moon,
   LogOut,
@@ -17,6 +18,7 @@ import { useState } from "react";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: typeof MessageSquare }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
+  { id: "voice_call", label: "Voice Call", icon: Phone },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "goals", label: "Goals", icon: Target },
   { id: "memory", label: "Memory", icon: Brain },
@@ -26,6 +28,7 @@ export default function Sidebar() {
   const {
     currentView,
     setCurrentView,
+    setInCall,
     isDarkMode,
     setIsDarkMode,
     setIsOnboarded,
@@ -69,7 +72,10 @@ export default function Sidebar() {
             <button
               key={item.id}
               className={`sidebar-nav-item ${active ? "active" : ""}`}
-              onClick={() => setCurrentView(item.id)}
+              onClick={() => {
+                setCurrentView(item.id);
+                if (item.id === "voice_call") setInCall(true);
+              }}
             >
               <Icon size={15} strokeWidth={active ? 2 : 1.5} />
               <span>{item.label}</span>

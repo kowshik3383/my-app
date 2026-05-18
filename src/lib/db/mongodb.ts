@@ -35,7 +35,7 @@ export async function ensureCollections(): Promise<void> {
   const collections = await db.listCollections().toArray();
   const names = collections.map((c) => c.name);
 
-  const required = ["users", "sessions", "messages", "health_metrics", "goals", "goal_progress", "memories", "memory_summaries", "ai_insights"];
+  const required = ["users", "sessions", "messages", "health_metrics", "goals", "goal_progress", "memories", "memory_summaries", "ai_insights", "voice_sessions", "voice_events", "voice_analytics", "emotion_signals", "call_summaries"];
   const createOps = required
     .filter((name) => !names.includes(name))
     .map((name) => db.createCollection(name).catch(() => {}));

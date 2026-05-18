@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - CARTESIA_API_KEY=${CARTESIA_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - WS_PORT=3001
+      - WS_HOST=0.0.0.0
+      - STT_PROVIDER=openai
+      - TTS_PROVIDER=cartesia
+      - TTS_VOICE_ID=sonic-2
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/realtime"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

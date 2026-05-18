@@ -33,7 +33,7 @@ interface UserProfile {
   coachingStyle?: CoachingStyle;
 }
 
-export type ViewType = "chat" | "dashboard" | "goals" | "memory";
+export type ViewType = "chat" | "dashboard" | "goals" | "memory" | "voice_call";
 
 interface Store {
   userProfile: UserProfile | null;
@@ -66,6 +66,8 @@ interface Store {
 
   currentView: ViewType;
   setCurrentView: (view: ViewType) => void;
+  inCall: boolean;
+  setInCall: (value: boolean) => void;
 }
 
 export const useStore = create<Store>()(
@@ -101,6 +103,8 @@ export const useStore = create<Store>()(
 
       currentView: "chat",
       setCurrentView: (view) => set({ currentView: view }),
+      inCall: false,
+      setInCall: (value) => set({ inCall: value }),
     }),
     {
       name: "health-companion-storage",
